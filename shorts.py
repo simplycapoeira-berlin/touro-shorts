@@ -13,6 +13,8 @@ to the movement:
   out  - the card starts leaving; past the clip end = hold to the end
   kick - optional, "left" or "right": at `out` a kick sweeping in that direction knocks the
          letters off screen instead of the normal slide-out
+  shrink - optional time: from here the card shrinks toward its aligned top corner, staying
+         readable but out of the movement's way until `out` (bridges a long gap to the next card)
 Cards alternate left / right alignment. Design rules behind every constant: STYLE.md.
 
 The edit's "input" may use environment variables, e.g. "$SC_CONTENT/movimento/clip.mov", so
@@ -68,6 +70,7 @@ KICK_LIFT = 1100          # px/s upward at impact
 GRAVITY = 5000            # px/s^2
 KICK_SPIN = 520           # deg/s
 KICK_FADE = 0.45          # s for a struck letter to fade out
+SHRINK_TO = 0.45          # final scale of a shrinking card; mostly reached in its first ~3 s
 
 
 @dataclass
@@ -201,16 +204,28 @@ def overlay_card(frame, g, card, t):
     layer = Image.new("RGBA", (W, H))
     if card.get("kick"):
         kick(glyphs, card, t)
-        paint(layer, glyphs, marker, 1 - clamp01((t - card["out"]) / 0.1))
+    paint(layer, glyphs, marker, 1 - clamp01((t - card["out"]) / 0.1) if card.get("kick") else 1.0)
+    if "shrink" in card:
+        p = clamp01((min(t, card["out"]) - card["shrink"]) / (card["out"] - card["shrink"]))
+        layer = scaled(layer, 1 - (1 - SHRINK_TO) * ease_out_cubic(p), g["side"])
+    if card.get("kick"):
         return Image.alpha_composite(frame, layer)
 
-    paint(layer, glyphs, marker, 1.0)
     p_out = clamp01((t - card["out"]) / EXIT)
     dx = g["side"] * TRAVEL * p_out**2
     copies = [(k * TRAIL_STEP * p_out, o) for k, o in TRAIL] if p_out > 0 else []
     for lag, opacity in copies + [(0, 1.0)]:
         frame = Image.alpha_composite(frame, shifted(layer, dx - g["side"] * lag, opacity * (1 - p_out)))
     return frame
+
+
+def scaled(layer, s, side):
+    """Scale the card layer by s around its aligned top corner, so it shrinks into that corner."""
+    if s >= 1:
+        return layer
+    ax, ay = (MARGIN_X if side > 0 else W - MARGIN_X), TEXT_TOP
+    return layer.transform(layer.size, Image.AFFINE, (1 / s, 0, ax - ax / s, 0, 1 / s, ay - ay / s),
+                           resample=Image.BICUBIC)
 
 
 def shifted(layer, dx, opacity):

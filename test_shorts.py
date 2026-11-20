@@ -18,6 +18,7 @@ for edit_path in Path(shorts.ROOT, "edits").glob("*.json"):
         assert card["in"] < card["hit"] < card["out"], card
         assert card["hit"] - card["in"] <= 0.8, f"key word lands too late for short attention: {card}"
         assert card.get("kick") in (None, "left", "right"), card
+        assert card["hit"] < card.get("shrink", card["hit"] + 1) < card["out"], f"shrink outside hold: {card}"
 
         def ink_at(t):
             return shorts.overlay_card(blank, g, card, t).getbbox()

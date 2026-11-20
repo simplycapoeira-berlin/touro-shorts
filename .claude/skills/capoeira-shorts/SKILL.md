@@ -15,7 +15,10 @@ with the body. STYLE.md has the full rules. This skill is the working procedure.
 - Each card has two levels: a small UPPERCASE tracked kicker, then the last word as a huge key word
   sized to the safe width. Cards alternate left / right alignment (call and response).
 - **The audience has a short attention span.** A card is readable about 0.6 s after `in`
-  (`hit - in ≤ 0.8`) and stays about 2 s. Put the first card in the first second.
+  (`hit - in ≤ 0.8`) and is shown full size for a few seconds. Put the first card in the first second.
+- **No long gaps between sentences.** If the next card is far away, don't let the current one
+  vanish: set `shrink` (about 5 s into the clip) so it shrinks into its corner, and set its `out`
+  to the next card's `in` − 0.3 s so they swap cleanly.
 - **Text never blocks the movement.** Show a card only while the body is clear of the upper
   band (y ≈ 280–620).
 - **The movement may remove the text.** When a kick sweeps through the band, use
