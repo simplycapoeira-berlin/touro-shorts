@@ -52,6 +52,7 @@ An edit file:
 {
   "input": "$SC_CONTENT/movimento/261117-ksg-movimento/touro-sequence-edit.mov",
   "output": "out/261117-touro.mp4",
+  "brightness": -0.05,
   "cards": [
     {"text": "It is not about talent", "in": 0.6, "hit": 1.25, "shrink": 5.0, "out": 15.9, "kick": "left"},
     {"text": "It is about practice", "in": 17.6, "hit": 18.25, "out": 19.6, "kick": "left"}
@@ -62,6 +63,7 @@ An edit file:
 - The last word of each card is its key word: set huge, with the yellow marker.
 - `in`: the card starts appearing. `hit`: the key word has landed. `out`: the card starts leaving.
 - `kick` (optional, `left`/`right`): at `out`, a kick knocks the letters away in that direction.
+- `brightness` (optional, edit level, −1..1): darkens or brightens the footage only, never the text.
 - `shrink` (optional time): the card shrinks into its corner from here until `out`, bridging a
   long gap to the next card.
 

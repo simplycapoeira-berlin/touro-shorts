@@ -15,6 +15,10 @@ constant there and update the reason here.
 
 Fonts are the site's own woff2 files converted to TTF (`fonts/`).
 
+**Footage grade:** the bright gym footage is darkened slightly per edit (`"brightness"`,
+e.g. −0.05 ≈ 10% less average brightness). Only the footage is graded, never the type, so black
+and yellow stay exact and pop more against the calmer background.
+
 ## 2. Composition (1080×1920)
 
 - Every card has two levels: a **kicker** (all words but the last) above a **key word** (the
@@ -88,6 +92,7 @@ Record every round of feedback here: what was asked, and the decision it led to.
 
 | Version | Feedback | Decision |
 |---|---|---|
+| v6 (2026-11-20) | The video is great; make it look a little darker. | New edit-level `brightness` (ffmpeg eq), applied to the footage before the text is drawn. Touro edit: −0.05 (mean brightness 158.6 → 143.1). Text and timings unchanged. |
 | v5 (2026-11-20) | v4 is good. After second 15, the kick should throw the first sentence out; everything else stays the same. | The shrunken "talent" now gets `"kick": "left"` with its impact at 15.9 s, the frame the foot sweeps right to left through the top-left corner. "practice" is unchanged (17.6 s, armada at 19.6 s). Both sentences now leave by a kick. |
 | v4 (2026-11-20) | Good design overall, but the first sentence disappears and the gap to the second is too long. Keep the first sentence's start as it is; after 5 s it should shrink until the second sentence replaces it. | New optional `shrink` time: the card scales into its top corner (to 45%, ease-out) and stays until it's swapped. Touro edit: "talent" from 0.6 s, shrinking from 5.0 s, out at 17.3 s, ending as "practice" enters at 17.6 s. The kick exit is unchanged. |
 | v3 (2026-11-18) | Shorten text durations. The audience has short attention, so give the information faster. Sizes are good. No blue. Text must not block the movement, but the movement may remove the text (e.g. the last armada). | Enter/land timings roughly halved (readable ~0.6 s after `in`). Cards stay ~2 s. Kicker now ink. Cards appear only when the body is clear of the text band. New `kick` exit: the final armada knocks "practice" off screen. Touro edit: card 1 at 0.6–3.4 s (after the opening jump kick), card 2 at 17.6 s, kicked at 19.6 s. Confirmed: a payoff kick-off beats delivering card 2 earlier, even with a ~14 s text-free middle. |

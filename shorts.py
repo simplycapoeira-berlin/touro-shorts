@@ -18,7 +18,9 @@ to the movement:
 Cards alternate left / right alignment. Design rules behind every constant: STYLE.md.
 
 The edit's "input" may use environment variables, e.g. "$SC_CONTENT/movimento/clip.mov", so
-edit files never contain a machine-specific (or private) path.
+edit files never contain a machine-specific (or private) path. An optional edit-level
+"brightness" (ffmpeg eq, -1..1, default 0) grades the footage only, so the type keeps its exact
+brand colors.
 """
 import json
 import math
@@ -248,7 +250,7 @@ def render(edit_path):
     fps = 30
 
     decode = subprocess.Popen(
-        ["ffmpeg", "-v", "error", "-i", str(src), "-vf", f"scale={W}:{H},fps={fps}",
+        ["ffmpeg", "-v", "error", "-i", str(src), "-vf", f"scale={W}:{H},fps={fps},eq=brightness={edit.get('brightness', 0)}",
          "-f", "rawvideo", "-pix_fmt", "rgba", "-"], stdout=subprocess.PIPE)
     encode = subprocess.Popen(
         ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",

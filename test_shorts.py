@@ -9,7 +9,9 @@ import shorts
 blank = Image.new("RGBA", (shorts.W, shorts.H))
 
 for edit_path in Path(shorts.ROOT, "edits").glob("*.json"):
-    for index, card in enumerate(json.loads(edit_path.read_text())["cards"]):
+    edit = json.loads(edit_path.read_text())
+    assert -0.2 <= edit.get("brightness", 0) <= 0.2, f"brightness is a subtle grade, not a fix: {edit_path}"
+    for index, card in enumerate(edit["cards"]):
         g = shorts.compose(card, index)
         assert shorts.MARGIN_X <= g["key_x"] and g["key_x"] + g["key_w"] <= shorts.W - shorts.MARGIN_X + 1, card
         kicker_w = sum(g["kicker_font"].getlength(c) for c in g["lead"]) + shorts.KICKER_SIZE * shorts.KICKER_TRACK * (len(g["lead"]) - 1)
