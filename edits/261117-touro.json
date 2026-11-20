@@ -2,7 +2,7 @@
   "input": "$SC_CONTENT/movimento/261117-ksg-movimento/touro-sequence-edit.mov",
   "output": "out/261117-touro.mp4",
   "cards": [
-    {"text": "It is not about talent", "in": 0.6, "hit": 1.25, "shrink": 5.0, "out": 17.3},
+    {"text": "It is not about talent", "in": 0.6, "hit": 1.25, "shrink": 5.0, "out": 15.9, "kick": "left"},
     {"text": "It is about practice", "in": 17.6, "hit": 18.25, "out": 19.6, "kick": "left"}
   ]
 }

@@ -49,8 +49,9 @@ instead (step 4b) and is swapped directly for the next one.
    from the athlete.
    - **4b. Shrink to bridge a gap** (`shrink`, ~5 s for a full-size read). The card scales down
      into its aligned top corner, toward 45%, with most of the shrink done in the first ~3 s. The
-     sentence stays on screen without competing with the movement. Its `out` ends right as the
-     next card's `in` starts (`out` ≈ next `in` − 0.3 s), so the two cards swap without overlapping.
+     sentence stays on screen without competing with the movement. It leaves before the next
+     card, preferably knocked out by a kick passing through its corner (`kick`); otherwise it
+     slides out ending right as the next card's `in` starts (`out` ≈ next `in` − 0.3 s).
 5. **Leave** (`out`). Either a kick knocks the letters away (preferred when a kick passes through
    the band: impact = the frame the foot reaches the text), or the card slides out toward the
    open side with a two-ghost motion trail (0.3 s).
@@ -87,6 +88,7 @@ Record every round of feedback here: what was asked, and the decision it led to.
 
 | Version | Feedback | Decision |
 |---|---|---|
+| v5 (2026-11-20) | v4 is good. After second 15, the kick should throw the first sentence out; everything else stays the same. | The shrunken "talent" now gets `"kick": "left"` with its impact at 15.9 s, the frame the foot sweeps right to left through the top-left corner. "practice" is unchanged (17.6 s, armada at 19.6 s). Both sentences now leave by a kick. |
 | v4 (2026-11-20) | Good design overall, but the first sentence disappears and the gap to the second is too long. Keep the first sentence's start as it is; after 5 s it should shrink until the second sentence replaces it. | New optional `shrink` time: the card scales into its top corner (to 45%, ease-out) and stays until it's swapped. Touro edit: "talent" from 0.6 s, shrinking from 5.0 s, out at 17.3 s, ending as "practice" enters at 17.6 s. The kick exit is unchanged. |
 | v3 (2026-11-18) | Shorten text durations. The audience has short attention, so give the information faster. Sizes are good. No blue. Text must not block the movement, but the movement may remove the text (e.g. the last armada). | Enter/land timings roughly halved (readable ~0.6 s after `in`). Cards stay ~2 s. Kicker now ink. Cards appear only when the body is clear of the text band. New `kick` exit: the final armada knocks "practice" off screen. Touro edit: card 1 at 0.6–3.4 s (after the opening jump kick), card 2 at 17.6 s, kicked at 19.6 s. Confirmed: a payoff kick-off beats delivering card 2 earlier, even with a ~14 s text-free middle. |
 | v2 | Bring the texts closer to the beginning. Make alignment and animations more artistic. | Two-level editorial card (small tracked kicker + poster-size key word). Left/right call-and-response alignment. Meia-lua arc letter swing, marker sweep, motion-trail exit. First card in the first second. |
