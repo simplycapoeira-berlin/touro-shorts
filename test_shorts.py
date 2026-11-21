@@ -18,6 +18,9 @@ for edit_path in Path(shorts.ROOT, "edits").glob("*.json"):
         assert clip.get("start", 0) < clip.get("end", float("inf")), clip
         if edit["type"] == "educational":
             assert "start" in clip and "end" in clip, f"educational steps are explicit cuts: {clip}"
+            intro = clip.get("intro", [0, 0.5])
+            assert 0.5 <= intro[1] - intro[0] <= 1.2, f"finger count should last ~0.8-0.9 s: {clip}"
+            assert intro[1] <= clip["start"], f"finger count comes before the move: {clip}"
     if edit["type"] == "sequence" and len(edit["clips"]) > 1:
         assert edit["clips"][0].get("speed", 1) < 1, f"a sequence opens with a slow-motion hook: {edit_path}"
     for index, card in enumerate(shorts.edit_cards(edit)):

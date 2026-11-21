@@ -52,8 +52,11 @@ if something isn't covered, ask, then record the answer in STYLE.md.
    - `sequence`: the hook is the best kick/acrobatic moment, 1–1.5 s at speed 0.5. The body
      runs from the first movement to ~1.5 s after the last spectacular move. Cards follow §8.
      Timeline time = hook length + (source time − body start).
-   - `educational`: each clip is cut from peak − 1.7 s to peak + 1.9 s. No cards (they're
-     generated). Add a clip `text` only when the user names the step.
+   - `educational`: each step is its finger count (`intro`: from the hand rising to just after
+     the count is shown; find it on a zoomed 10 fps crop of the upper body,
+     `crop=900:900:600:750` on 2160×3840 iPhone footage) plus its move, cut from peak − 1.4 s
+     to peak + 1.7 s. No cards (they're generated and land on the fingers). Add a clip `text`
+     only when the user names the step. Check that the count matches the step number.
 4. **Check the edit:** run `uv run test_shorts.py`.
 5. **Render:** run `uv run shorts.py render edits/<file>.json` (output in `out/`).
 6. **Look at it.** Extract frames at `in`, `hit`, mid-hold and the exit / kick impact (cropped

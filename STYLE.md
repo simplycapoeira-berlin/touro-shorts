@@ -98,6 +98,7 @@ Record every round of feedback here: what was asked, and the decision it led to.
 
 | Version | Feedback | Decision |
 |---|---|---|
+| v8 (2026-11-21) | Touro should also be seen showing the steps with his fingers. | Each educational step now starts with its finger count, cut from the clip's standing intro (`intro`, ~0.9 s): thumb = 1 … five fingers = 5. The STEP number lands on it (0.6 s into the step). Move cuts were tightened to peak −1.4 s / +1.7 s to keep the video under 20 s (19.7 s). |
 | v7 (2026-11-21) | New raw clips in `in/`. Two edits: one like before (an attention-heavy movement first, then the sequence with our type, same text for now), and one educational step-by-step video with cuts. Classify the target videos as models (types) and keep them as output metadata. Later, users only bring videos and text and everything runs reliably and repeatably. | Two video types (§8): `sequence` and `educational`. New `clips` timeline (cut, slow motion, join, rotate/scale any source) replaces the single `input`. `in/` and `out/` are git-ignored. 261120-sequence: 0.5× hook of IMG_7011's armada and high kick, then the sequence; "talent" lands during the hook and is kicked out by the armada at 12.95 s; "practice" is kicked out by the aú at 16.1 s; the calm ginga tail is trimmed (17.8 s total). 261120-steps: IMG_7013–7017 cut to their move (peak −1.7 s / +1.9 s), with automatic STEP 1–5 cards (18 s). Confirmed: plain step numbers are the default; names only when the user gives them. Outputs carry the type in their metadata, and GPS is stripped. |
 | v6 (2026-11-20) | The video is great; make it look a little darker. | New edit-level `brightness` (ffmpeg eq), applied to the footage before the text is drawn. Touro edit: −0.05 (mean brightness 158.6 → 143.1). Text and timings unchanged. |
 | v5 (2026-11-20) | v4 is good. After second 15, the kick should throw the first sentence out; everything else stays the same. | The shrunken "talent" now gets `"kick": "left"` with its impact at 15.9 s, the frame the foot sweeps right to left through the top-left corner. "practice" is unchanged (17.6 s, armada at 19.6 s). Both sentences now leave by a kick. |
@@ -141,17 +142,23 @@ the same video. So each type below is a recipe with no free choices left except 
 
 ### `educational`: step-by-step techniques
 
-- **Input:** one clip per technique, filmed as "stand, show, return".
-- **Structure:** one cut per step, in recording order.
-  - Each cut runs from 1.7 s before the move's peak to 1.9 s after it (3.6 s): lead-in, move,
+- **Input:** one clip per technique, filmed as "stand and **show the step number with the
+  fingers**, show the move, return".
+- **Structure:** each step is two cuts from its clip, in recording order, with hard cuts
+  everywhere. Total ≤ 20 s.
+  - **Finger count** (`intro`, ~0.8–0.9 s): from the hand rising to just after the fingers are
+    clearly shown. Confirm it on a zoomed 10 fps crop of the upper body. The count must match
+    the step number.
+  - **Move:** from 1.4 s before the move's peak to 1.7 s after it (3.1 s): lead-in, move,
     recovery.
-  - Standing and explaining parts are dropped (they're silent).
-  - Hard cuts between steps.
+  - Everything else (standing, walking into position) is dropped. It's silent.
 - **Text:** generated, not hand-timed.
   - Each step opens with a card: kicker "STEP", key word = the step number (or the clip's
     `text`, whose last word becomes the key word).
-  - The card lands 0.8 s into its cut and leaves 0.35 s before the cut ends.
-  - Cards alternate left/right, so consecutive steps answer each other.
+  - The card lands 0.6 s into the step, while the fingers are up, so the number and the hand
+    say the same thing. It leaves 0.35 s before the step ends.
+  - Cards alternate left/right. The card sits on the opposite side from the raised hand; check
+    that it never covers the fingers.
 
 Shared by all types: brand (§1), composition (§2), motion grammar (§3), house grade −0.05
 brightness, 1080×1920/30 fps output.

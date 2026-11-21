@@ -48,7 +48,7 @@ Every edit declares a `type`, the model of the output. It's stored in the output
 | Type | Input | Output |
 |---|---|---|
 | `sequence` | one continuous movement clip and a sentence | a 0.5× slow-motion hook of the best move, then the sequence; two text cards that the kicks knock away |
-| `educational` | one clip per technique | one cut per move with automatic STEP 1, 2, 3… cards |
+| `educational` | one clip per technique, opened by a finger count | per step: the finger count, then the move, with an automatic STEP 1, 2, 3… card landing on the fingers |
 
 ## Make a short
 
@@ -77,21 +77,23 @@ A sequence edit:
 }
 ```
 
-An educational edit needs no cards. Each clip becomes one step:
+An educational edit needs no cards. Each clip becomes one step: its finger count (`intro`)
+followed by its move:
 
 ```json
 {
   "type": "educational",
   "clips": [
-    {"src": "in/IMG_7013.MOV", "start": 7.5, "end": 11.1},
-    {"src": "in/IMG_7014.MOV", "start": 4.9, "end": 8.5, "text": "Step 2 aú"}
+    {"src": "in/IMG_7013.MOV", "intro": [2.5, 3.4], "start": 7.3, "end": 10.4},
+    {"src": "in/IMG_7014.MOV", "intro": [1.1, 1.9], "start": 5.2, "end": 8.3, "text": "Step 2 aú"}
   ],
   "output": "out/261120-steps.mp4"
 }
 ```
 
 - **Clips:** `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
-  slow motion). Clips are joined in order with hard cuts.
+  slow motion). `intro` [start, end] plays a second cut of the same source first (the finger
+  count). Clips are joined in order with hard cuts.
 - **Cards:** the last word of each card is its key word, set huge with the yellow marker.
   - `in`: the card starts appearing. `hit`: the key word has landed. `out`: the card starts
     leaving. Times are on the final timeline.

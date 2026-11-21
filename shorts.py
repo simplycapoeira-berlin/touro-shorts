@@ -47,10 +47,10 @@ ROOT = Path(__file__).parent
 MODELS = {
     "sequence": "one continuous movement sequence, opened by a slow-motion hook of its most "
                 "spectacular move; hand-timed cards ride and get kicked by the movement",
-    "educational": "step by step: one cut per technique, each opened by an automatic numbered "
-                   "step card",
+    "educational": "step by step: per technique the finger count, then the move; an automatic "
+                   "numbered step card lands on the fingers",
 }
-STEP_IN, STEP_HIT, STEP_GAP = 0.15, 0.8, 0.35  # step card timing inside its cut, seconds
+STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
 
 # Brand tokens, taken from sc-capoeira.de (css: --sc-black, --sc-yellow, Archivo).
 INK = (17, 17, 17)
@@ -257,15 +257,33 @@ def shifted(layer, dx, opacity):
     return out
 
 
+def play_clips(edit):
+    """Clips in play order. A clip's optional "intro" [start, end] (an educational step's finger
+    count) is cut from the same source and plays right before the clip itself."""
+    clips = []
+    for clip in edit["clips"]:
+        if "intro" in clip:
+            clips.append({"src": clip["src"], "start": clip["intro"][0], "end": clip["intro"][1]})
+        clips.append({k: v for k, v in clip.items() if k != "intro"})
+    return clips
+
+
 def edit_cards(edit):
-    """The edit's text cards: explicit "cards", or for educational edits one step card per clip."""
+    """The edit's text cards: explicit "cards", or for educational edits one step card per step
+    (a step = its intro + its move)."""
     if "cards" in edit:
         return edit["cards"]
     if edit["type"] != "educational":
         return []
-    spans = timeline.segments(edit["clips"], ROOT)
-    return [{"text": clip.get("text", f"Step {n}"), "in": start + STEP_IN, "hit": start + STEP_HIT,
-             "out": end - STEP_GAP} for n, (clip, (start, end)) in enumerate(zip(edit["clips"], spans), 1)]
+    spans = iter(timeline.segments(play_clips(edit), ROOT))
+    cards = []
+    for n, clip in enumerate(edit["clips"], 1):
+        start, end = next(spans)
+        if "intro" in clip:
+            end = next(spans)[1]
+        cards.append({"text": clip.get("text", f"Step {n}"), "in": start + STEP_IN, "hit": start + STEP_HIT,
+                      "out": end - STEP_GAP})
+    return cards
 
 
 def render(edit_path):
@@ -275,7 +293,7 @@ def render(edit_path):
     dst = timeline.source(ROOT, edit["output"])
     dst.parent.mkdir(parents=True, exist_ok=True)
     cut = dst.with_suffix(".timeline.mp4")
-    timeline.assemble(edit["clips"], edit.get("brightness", 0), ROOT, cut)
+    timeline.assemble(play_clips(edit), edit.get("brightness", 0), ROOT, cut)
     cards = [(compose(c, i), c) for i, c in enumerate(edit_cards(edit))]
     fps = timeline.FPS
     metadata = json.dumps({"type": edit["type"], "edit": Path(edit_path).name,
