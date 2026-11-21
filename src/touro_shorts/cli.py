@@ -2,11 +2,11 @@
 brand-styled, movement-timed text cards on top.
 
 Usage:
-    uv run shorts.py peaks <clip>        # print motion peaks, to pick cuts and card timings
-    uv run shorts.py render <edit.json>  # render the edit described in the JSON
-    uv run shorts.py clean <edit.json> [version]   # keep one render version (default: latest),
+    uv run touro-shorts peaks <clip>        # print motion peaks, to pick cuts and card timings
+    uv run touro-shorts render <edit.json>  # render the edit described in the JSON
+    uv run touro-shorts clean <edit.json> [version]   # keep one render version (default: latest),
                                                    # delete the others; only when the user asks
-    uv run shorts.py archive <edit.json> <folder>  # cold-archive its inputs, kept render and edit
+    uv run touro-shorts archive <edit.json> <folder>  # cold-archive its inputs, kept render and edit
                                                    # into <folder>/<edit name>/ (e.g. Google Drive)
 
 Every render is a new version (out/<name>-v1.mp4, -v2.mp4, ...; see versions.py); a render
@@ -36,6 +36,7 @@ the repo (e.g. "in/IMG_7011.MOV"), so edit files never contain a machine-specifi
 path. "brightness" (ffmpeg eq, -0.2..0.2, default 0) grades the footage only, so the type keeps its
 exact brand colors.
 """
+
 import json
 import subprocess
 import sys
@@ -44,39 +45,79 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-import archive
-import cards
-import models
-import timeline
-import versions
+from . import archive, cards, models, timeline, versions
 
-ROOT = models.ROOT
 W, H = cards.W, cards.H
 
 
 def render(edit_path):
     edit = models.load(edit_path)
-    output = timeline.source(ROOT, edit["output"])
+    output = timeline.source(edit["output"])
     output.parent.mkdir(parents=True, exist_ok=True)
     previous, dst = versions.latest(output), versions.next_path(output)
     cut = dst.with_suffix(".timeline.mp4")
-    timeline.assemble(models.play_clips(edit), edit.get("brightness", 0), ROOT, cut)
+    timeline.assemble(models.play_clips(edit), edit.get("brightness", 0), cut)
     placed = [(cards.compose(c, i), c) for i, c in enumerate(models.edit_cards(edit))]
     fps = timeline.FPS
-    metadata = json.dumps({"type": edit["type"], "edit": Path(edit_path).name,
-                           "clips": [Path(c["src"]).name for c in edit["clips"]],
-                           "text": [c["text"] for _, c in placed]})
+    metadata = json.dumps(
+        {
+            "type": edit["type"],
+            "edit": Path(edit_path).name,
+            "clips": [Path(c["src"]).name for c in edit["clips"]],
+            "text": [c["text"] for _, c in placed],
+        }
+    )
 
-    decode = subprocess.Popen(["ffmpeg", "-v", "error", "-i", str(cut), "-f", "rawvideo", "-pix_fmt", "rgba", "-"],
-                              stdout=subprocess.PIPE)
+    decode = subprocess.Popen(
+        ["ffmpeg", "-v", "error", "-i", str(cut), "-f", "rawvideo", "-pix_fmt", "rgba", "-"], stdout=subprocess.PIPE
+    )
     encode = subprocess.Popen(
-        ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-         "-r", str(fps), "-i", "-", "-i", str(cut), "-map", "0:v", "-map", "1:a",
-         "-c:v", "libx264", "-crf", "17", "-preset", "medium", "-pix_fmt", "yuv420p",
-         "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart",
-         "-map_metadata", "-1", "-metadata", f"genre={edit['type']}", "-metadata", f"comment={metadata}",
-         str(dst)],
-        stdin=subprocess.PIPE)
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-y",
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "rgba",
+            "-s",
+            f"{W}x{H}",
+            "-r",
+            str(fps),
+            "-i",
+            "-",
+            "-i",
+            str(cut),
+            "-map",
+            "0:v",
+            "-map",
+            "1:a",
+            "-c:v",
+            "libx264",
+            "-crf",
+            "17",
+            "-preset",
+            "medium",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-shortest",
+            "-movflags",
+            "+faststart",
+            "-map_metadata",
+            "-1",
+            "-metadata",
+            f"genre={edit['type']}",
+            "-metadata",
+            f"comment={metadata}",
+            str(dst),
+        ],
+        stdin=subprocess.PIPE,
+    )
 
     frame_bytes, index = W * H * 4, 0
     while chunk := decode.stdout.read(frame_bytes):
@@ -102,8 +143,9 @@ def render(edit_path):
 def peaks(clip, top=6):
     """Print the strongest motion moments: mean frame difference, smoothed over 0.3 s."""
     raw = subprocess.run(
-        ["ffmpeg", "-v", "error", "-i", str(clip), "-vf", "scale=90:160,fps=30,format=gray",
-         "-f", "rawvideo", "-"], capture_output=True).stdout
+        ["ffmpeg", "-v", "error", "-i", str(clip), "-vf", "scale=90:160,fps=30,format=gray", "-f", "rawvideo", "-"],
+        capture_output=True,
+    ).stdout
     frames = np.frombuffer(raw, np.uint8).reshape(-1, 160, 90).astype(np.float32)
     energy = np.convolve(np.abs(np.diff(frames, axis=0)).mean((1, 2)), np.ones(9) / 9, "same")
     chosen = []  # strongest frames first, at least 1 s apart so one pass is reported once
@@ -118,7 +160,7 @@ def peaks(clip, top=6):
 
 def clean(edit_path, keep=None):
     """Keep one version of the edit's render (default: the latest) and delete the others."""
-    output = timeline.source(ROOT, models.load(edit_path)["output"])
+    output = timeline.source(models.load(edit_path)["output"])
     before = versions.all_versions(output)
     kept = versions.prune(output, keep)
     print(f"kept {kept.name}; deleted {len(before) - 1} other version(s)")
@@ -128,22 +170,26 @@ def archive_edit(edit_path, folder):
     """Archive a rendered edit to <folder>/<edit name>/: raw source clips in inputs/, plus the
     render and the edit file. The folder must already exist (e.g. a synced Google Drive folder),
     so a mistyped path fails instead of silently creating a local copy."""
-    root = timeline.source(ROOT, folder)
+    root = timeline.source(folder)
     if not root.is_dir():
         sys.exit(f"archive folder not found: {root} (is Google Drive for desktop running?)")
     edit = models.load(edit_path)
-    render_path = versions.latest(timeline.source(ROOT, edit["output"]))
+    render_path = versions.latest(timeline.source(edit["output"]))
     if render_path is None:
         sys.exit(f"render {edit['output']} first: the archive keeps inputs and output together")
     dest = root / Path(edit_path).stem
-    clips = archive.archive([timeline.source(ROOT, c["src"]) for c in edit["clips"]], dest / "inputs")
+    clips = archive.archive([timeline.source(c["src"]) for c in edit["clips"]], dest / "inputs")
     files = archive.archive([render_path, edit_path], dest)
     print(f"{dest}  ({len(clips)} inputs + {len(files)} files, sha256-verified; in/ untouched)")
 
 
-if __name__ == "__main__":
-    commands = {"render": (render, 1, 1), "peaks": (peaks, 1, 1), "clean": (clean, 1, 2),
-                "archive": (archive_edit, 2, 2)}
+def main():
+    commands = {
+        "render": (render, 1, 1),
+        "peaks": (peaks, 1, 1),
+        "clean": (clean, 1, 2),
+        "archive": (archive_edit, 2, 2),
+    }
     command, least, most = commands.get(sys.argv[1] if len(sys.argv) > 1 else "", (None, 0, 0))
     if command is None or not least <= len(sys.argv) - 2 <= most:
         sys.exit(__doc__)

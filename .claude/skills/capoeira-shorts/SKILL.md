@@ -46,7 +46,7 @@ if something isn't covered, ask, then record the answer in STYLE.md.
    - Clips that fit neither → ask the user.
    - Check the audio too (`astats`). Silent intros can be cut; speech must not be cut
      without asking.
-1. **Find when.** Run `uv run shorts.py peaks "<clip>"` for the strongest motion moments.
+1. **Find when.** Run `uv run touro-shorts peaks "<clip>"` for the strongest motion moments.
 2. **Find where.** Peaks say when, not where. They also fire on turns and steps. Confirm every
    move on a 10–15 fps sheet:
    `ffmpeg -ss <t> -t 2.4 -i <clip> -vf "fps=10,scale=108:-2,tile=24x1" -frames:v 1 sheet.png`.
@@ -62,7 +62,7 @@ if something isn't covered, ask, then record the answer in STYLE.md.
      to peak + 1.7 s. No cards (they're generated and land on the fingers). Add a clip `text`
      only when the user names the step. Check that the count matches the step number.
 4. **Check the edit:** run `uv run pytest` (it validates every edit with `models.load` rules).
-5. **Render:** run `uv run shorts.py render edits/<file>.json`. Every render is a new version
+5. **Render:** run `uv run touro-shorts render edits/<file>.json`. Every render is a new version
    (`out/<name>-v<n>.mp4`). The command prints which one, or "unchanged" if nothing changed.
 6. **Look at it.** Extract frames at `in`, `hit`, mid-hold and the exit / kick impact (cropped
    to the top 1100 px and stacked with `hstack`). Check:
@@ -71,10 +71,10 @@ if something isn't covered, ask, then record the answer in STYLE.md.
    - the kick impact lands on the foot (±2 frames).
    Fix the timing and render again before showing the user.
 7. **Send the render** to the user, naming its version, with one line per change.
-8. **On feedback:** change the constants in `cards.py` or the edit. Update STYLE.md's rules
+8. **On feedback:** change the constants in `src/touro_shorts/cards.py` or the edit. Update STYLE.md's rules
    **and** add a decision file in `decisions/`. Make new rules checkable (`models.problems` or `tests/`).
-9. **Finish only when asked.** When the user is done: `uv run shorts.py clean edits/<file>.json
+9. **Finish only when asked.** When the user is done: `uv run touro-shorts clean edits/<file>.json
    [version]` keeps the chosen version (default: the latest) and deletes the others. Then, if
    asked, archive, with the Drive folder the user gives:
-   `uv run shorts.py archive edits/<file>.json "<folder>"`. Report the archive folder it prints.
+   `uv run touro-shorts archive edits/<file>.json "<folder>"`. Report the archive folder it prints.
    Never delete anything from `in/` unless the user asks, and only after the archive succeeded.

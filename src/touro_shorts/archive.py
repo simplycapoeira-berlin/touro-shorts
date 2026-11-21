@@ -5,6 +5,7 @@ Copies are verified by sha256 and recorded in the folder's manifest.json. Archiv
 idempotent: identical files already there are skipped, and a *different* file with the same name
 stops the run instead of being overwritten. Nothing is ever deleted from the source.
 """
+
 import hashlib
 import json
 import shutil

@@ -56,9 +56,9 @@ Every edit declares a `type`, the model of the output. It's stored in the output
 ## Make a short
 
 ```bash
-uv run shorts.py peaks in/<clip>.MOV            # when the strongest moves happen
+uv run touro-shorts peaks in/<clip>.MOV            # when the strongest moves happen
 cp edits/261120-sequence.json edits/<yymmdd>-<name>.json   # copy an edit of the same type
-uv run shorts.py render edits/<yymmdd>-<name>.json         # -> out/<name>.mp4
+uv run touro-shorts render edits/<yymmdd>-<name>.json         # -> out/<name>.mp4
 uv run pytest                                   # checks every edit, rule and the pipeline
 ```
 
@@ -114,8 +114,8 @@ you can compare iterations. A render identical to the latest version isn't store
 you're done:
 
 ```bash
-uv run shorts.py clean edits/261120-steps.json      # keep the latest version, delete the others
-uv run shorts.py clean edits/261120-steps.json 2    # or keep version 2
+uv run touro-shorts clean edits/261120-steps.json      # keep the latest version, delete the others
+uv run touro-shorts clean edits/261120-steps.json 2    # or keep version 2
 ```
 
 ## Cold archive (e.g. Google Drive)
@@ -123,7 +123,7 @@ uv run shorts.py clean edits/261120-steps.json 2    # or keep version 2
 Once an edit is finished, store its raw inputs, the render and the edit file away from the laptop:
 
 ```bash
-uv run shorts.py archive edits/261120-steps.json "<your Google Drive folder>"
+uv run touro-shorts archive edits/261120-steps.json "<your Google Drive folder>"
 ```
 
 This creates `<folder>/261120-steps/` with `inputs/` (the original clips, unchanged), the render
@@ -154,16 +154,19 @@ Several people change this repo through Claude, each on their own part. Changes 
 4. **Decisions accumulate.** Each design change adds one file in [decisions/](decisions/)
    (feedback → decision, who asked). [STYLE.md](STYLE.md) always shows the current rules.
 
+The app is a Python package in `src/touro_shorts/` with one command, `touro-shorts`:
+
 | Area | File |
 |---|---|
-| Text look and motion | `cards.py` |
-| Video types, edit fields, rules | `models.py` |
-| Cutting, slow motion, joining | `timeline.py` |
-| Render versions | `versions.py` |
-| Cold storage | `archive.py` |
-| Commands | `shorts.py` |
+| Text look and motion | `src/touro_shorts/cards.py` |
+| Video types, edit fields, rules | `src/touro_shorts/models.py` |
+| Cutting, slow motion, joining | `src/touro_shorts/timeline.py` |
+| Render versions | `src/touro_shorts/versions.py` |
+| Cold storage | `src/touro_shorts/archive.py` |
+| Commands | `src/touro_shorts/cli.py` |
+| Reference frames of the look | `tests/goldens/` |
 
-Claude reads [CLAUDE.md](CLAUDE.md) and the project skills in `.claude/skills/`:
+Every AI agent reads [AGENTS.md](AGENTS.md) (Claude via [CLAUDE.md](CLAUDE.md)), plus the project skills in `.claude/skills/`:
 `capoeira-shorts` (making an edit) and `coding-principles` (changing the code, and where each
 kind of change goes).
 

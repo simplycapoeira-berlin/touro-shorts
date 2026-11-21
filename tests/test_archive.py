@@ -1,9 +1,10 @@
 """Cold archive: verified copy, idempotent re-run, never overwrites, never deletes."""
+
 import json
 
 import pytest
 
-import archive
+from touro_shorts import archive
 
 
 def test_archive_copies_verifies_and_is_idempotent(tmp_path):

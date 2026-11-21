@@ -25,7 +25,7 @@ Ousterhout's *A Philosophy of Software Design* (the central job is managing comp
 
 ## Design (Ousterhout)
 
-- **Deep module, simple interface.** The whole interface is `shorts.py render | peaks | archive`. An edit says only *what* and *when* (`text`, `in`, `hit`, `out`, `kick`). All
+- **Deep module, simple interface.** The whole interface is `touro-shorts render | peaks | clean | archive`. An edit says only *what* and *when* (`text`, `in`, `hit`, `out`, `kick`). All
   layout, easing and compositing stay hidden inside.
 - **Pull complexity down.** Hard decisions (alignment alternation, key-word sizing, kick physics)
   are made in code, not pushed to the edit author as options.
@@ -58,4 +58,8 @@ Others change this repo in parallel through Claude. Assume your change meets the
 - **Guard what you add.** If breaking it silently is possible, add a test. Never relax an
   existing test or rule to make your change pass. If a rule is wrong, change it explicitly with
   a decision file.
+- **Let tools hold the style.** `uv run ruff format` and `uv run ruff check` before committing;
+  CI rejects unformatted code. The look is held by reference frames (`tests/goldens/`).
+- **Measure before optimizing.** Profile first (`cProfile`); most render time is ffmpeg decoding
+  4K footage. Python is not the bottleneck, so a rewrite (e.g. Rust) is not justified by data.
 - **Small, reviewable pull requests.** CI must be green. Fill in the pull request checklist.

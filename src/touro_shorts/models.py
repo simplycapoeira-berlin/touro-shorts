@@ -11,23 +11,21 @@ An edit file (edits/*.json) declares:
 problem at once, so a typo or a broken edit from any collaborator fails before rendering.
 Extending: a new field must be added to the *_KEYS sets and to `problems`, with a test.
 """
+
 import json
 import sys
 from pathlib import Path
 
-import cards
-import timeline
-
-ROOT = Path(__file__).parent
+from . import cards, timeline
 
 # Video types (STYLE.md §8). The key goes into every output's metadata; the description is the
 # structure an edit of that type follows. A new kind of video is a new entry here.
 MODELS = {
     "sequence": "one continuous movement sequence, opened by a slow-motion hook of its most "
-                "spectacular move; hand-timed cards ride and get kicked by the movement",
+    "spectacular move; hand-timed cards ride and get kicked by the movement",
     "educational": "opened by the most impressive move at real speed, then step by step: per "
-                   "technique the finger count, then the move; an automatic numbered step card "
-                   "lands on the fingers and pops on the move",
+    "technique the finger count, then the move; an automatic numbered step card "
+    "lands on the fingers and pops on the move",
 }
 STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
 PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's peak (STYLE.md §8)
@@ -62,19 +60,32 @@ def edit_cards(edit):
         return edit["cards"]
     if edit["type"] != "educational":
         return []
-    spans = iter(timeline.segments(play_clips(edit), ROOT))
+    spans = iter(timeline.segments(play_clips(edit)))
     steps = []
     if has_hook(edit):  # text from the very first frame: muted scrollers decide in ~1-3 s
         hook, (_, hook_end) = edit["clips"][0], next(spans)
-        steps.append({"text": hook.get("text", f"In {len(edit['clips']) - 1} steps"),
-                      "in": 0.0, "hit": HOOK_HIT, "out": hook_end - HOOK_GAP})
-    for n, clip in enumerate(edit["clips"][has_hook(edit):], 1):
+        steps.append(
+            {
+                "text": hook.get("text", f"In {len(edit['clips']) - 1} steps"),
+                "in": 0.0,
+                "hit": HOOK_HIT,
+                "out": hook_end - HOOK_GAP,
+            }
+        )
+    for n, clip in enumerate(edit["clips"][has_hook(edit) :], 1):
         start, end = next(spans)
         move_start = start
         if "intro" in clip:
             move_start, end = next(spans)
-        steps.append({"text": clip.get("text", f"Step {n}"), "in": start + STEP_IN, "hit": start + STEP_HIT,
-                      "out": end - STEP_GAP, "beats": [move_start + PEAK_LEAD]})
+        steps.append(
+            {
+                "text": clip.get("text", f"Step {n}"),
+                "in": start + STEP_IN,
+                "hit": start + STEP_HIT,
+                "out": end - STEP_GAP,
+                "beats": [move_start + PEAK_LEAD],
+            }
+        )
     return steps
 
 
@@ -88,7 +99,9 @@ def problems(edit):
 
     kind = edit.get("type")
     require(kind in MODELS, f'"type" must be one of {sorted(MODELS)}, got {kind!r}')
-    require(not set(edit) - EDIT_KEYS, f"unknown edit keys {sorted(set(edit) - EDIT_KEYS)} (allowed: {sorted(EDIT_KEYS)})")
+    require(
+        not set(edit) - EDIT_KEYS, f"unknown edit keys {sorted(set(edit) - EDIT_KEYS)} (allowed: {sorted(EDIT_KEYS)})"
+    )
     require("clips" in edit and "output" in edit, 'an edit needs "clips" and "output"')
     require(-0.2 <= edit.get("brightness", 0) <= 0.2, "brightness is a subtle grade: keep it within -0.2..0.2")
     for clip in edit.get("clips", []):
@@ -118,15 +131,25 @@ def problems(edit):
         words = card.get("text", "").split()
         require(2 <= len(words) <= 6, f"a card has 2..6 words (kicker + key word): {card}")
         require(card.get("in", 0) < card.get("hit", -1) < card.get("out", -1), f"in < hit < out: {card}")
-        require(card.get("hit", 0) - card.get("in", 0) <= 0.8, f"key word lands too late for short attention (hit - in <= 0.8): {card}")
+        require(
+            card.get("hit", 0) - card.get("in", 0) <= 0.8,
+            f"key word lands too late for short attention (hit - in <= 0.8): {card}",
+        )
         require(card.get("kick") in (None, "left", "right"), f'kick is "left" or "right": {card}')
-        require("shrink" not in card or card.get("hit", 0) < card["shrink"] < card.get("out", 0),
-                f"shrink must fall between hit and out: {card}")
+        require(
+            "shrink" not in card or card.get("hit", 0) < card["shrink"] < card.get("out", 0),
+            f"shrink must fall between hit and out: {card}",
+        )
         beats = card.get("beats", [])
-        require(beats == sorted(beats) and all(card.get("hit", 0) < b <= card.get("out", 0) for b in beats),
-                f"beats are move moments in order, between hit and out: {card}")
+        require(
+            beats == sorted(beats) and all(card.get("hit", 0) < b <= card.get("out", 0) for b in beats),
+            f"beats are move moments in order, between hit and out: {card}",
+        )
         if len(words) >= 2:
-            require(cards.kicker_width(cards.compose(card, index)) <= cards.SAFE_W, f"kicker wider than the safe width: {card}")
+            require(
+                cards.kicker_width(cards.compose(card, index)) <= cards.SAFE_W,
+                f"kicker wider than the safe width: {card}",
+            )
     return found
 
 

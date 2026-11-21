@@ -5,20 +5,21 @@ A card is {"text", "in", "hit", "out", optional "kick", "shrink"} (see models.py
 the small kicker above. Cards alternate left / right alignment by their index. Everything here
 is pure drawing: no ffmpeg, no file I/O beyond the bundled fonts.
 """
+
 import math
 from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-import timeline
+from . import timeline
 
 FONTS = Path(__file__).parent / "fonts"
 
 # Brand tokens, taken from sc-capoeira.de (css: --sc-black, --sc-yellow, Archivo).
 INK = (17, 17, 17)
 MARK = (247, 224, 24)
-KEY_FONT = FONTS / "archivo-900.ttf"     # .sc-hero__title weight
+KEY_FONT = FONTS / "archivo-900.ttf"  # .sc-hero__title weight
 KICKER_FONT = FONTS / "archivo-800.ttf"  # .sc-kicker weight
 
 # Frame and Instagram safe zone (UI covers ~14% top, ~35% bottom, rail on the right).
@@ -29,41 +30,41 @@ TEXT_TOP = 280
 
 # Typography: small tracked kicker over a key word fitted to the safe width.
 KICKER_SIZE = 56
-KICKER_TRACK = 0.18       # em, .sc-kicker letter-spacing
-KEY_MAX = 330             # px cap so short key words don't become absurd
-GAP = 10                  # px between kicker baseline and key word cap height
+KICKER_TRACK = 0.18  # em, .sc-kicker letter-spacing
+KEY_MAX = 330  # px cap so short key words don't become absurd
+GAP = 10  # px between kicker baseline and key word cap height
 
 # Motion grammar (see STYLE.md §3). Times in seconds, distances in px. Kept short:
 # a card is fully readable ~0.6 s after `in`.
-KICKER_IN = 0.35          # kicker fades in while its tracking tightens from wide to rest
-KICKER_TRACK_FROM = 0.6   # em, starting letter-spacing
-LETTER_IN = 0.32          # one key-word letter swinging in along its arc
+KICKER_IN = 0.35  # kicker fades in while its tracking tightens from wide to rest
+KICKER_TRACK_FROM = 0.6  # em, starting letter-spacing
+LETTER_IN = 0.32  # one key-word letter swinging in along its arc
 LETTER_STAGGER = 0.025
-ARC_R = 200               # radius of the meia-lua arc the letters travel
-MARK_SWEEP = 0.15         # marker sweep, ends exactly on `hit`
-DRIFT = 16                # slow drift while holding, keeps the card alive without looping
-EXIT = 0.3                # normal exit: slide toward the open side with a motion trail
+ARC_R = 200  # radius of the meia-lua arc the letters travel
+MARK_SWEEP = 0.15  # marker sweep, ends exactly on `hit`
+DRIFT = 16  # slow drift while holding, keeps the card alive without looping
+EXIT = 0.3  # normal exit: slide toward the open side with a motion trail
 TRAVEL = 320
 TRAIL = ((2, 0.15), (1, 0.3))  # (step, opacity) ghost copies while leaving
 TRAIL_STEP = 60
-KICK_WAVE = 0.12          # s for the leg to sweep across the full frame width
-KICK_SPEED = 2600         # px/s sideways
-KICK_LIFT = 1100          # px/s upward at impact
-GRAVITY = 5000            # px/s^2
-KICK_SPIN = 520           # deg/s
-KICK_FADE = 0.45          # s for a struck letter to fade out
-SHRINK_TO = 0.45          # scale of a shrunk card
-SHRINK_SNAP = 0.35        # s: the card snaps small with a springy overshoot, not a slow fade-down
-BEAT_POP = 0.12           # a beat (a kick or move) punches the card 12% bigger...
-BEAT_DUR = 0.3            # ...for this long. Nothing else: the type stays plain (no underlines)
+KICK_WAVE = 0.12  # s for the leg to sweep across the full frame width
+KICK_SPEED = 2600  # px/s sideways
+KICK_LIFT = 1100  # px/s upward at impact
+GRAVITY = 5000  # px/s^2
+KICK_SPIN = 520  # deg/s
+KICK_FADE = 0.45  # s for a struck letter to fade out
+SHRINK_TO = 0.45  # scale of a shrunk card
+SHRINK_SNAP = 0.35  # s: the card snaps small with a springy overshoot, not a slow fade-down
+BEAT_POP = 0.12  # a beat (a kick or move) punches the card 12% bigger...
+BEAT_DUR = 0.3  # ...for this long. Nothing else: the type stays plain (no underlines)
 
 
 @dataclass
 class Glyph:
     ch: str
     font: ImageFont.FreeTypeFont
-    x: float      # left of the baseline
-    y: float      # baseline
+    x: float  # left of the baseline
+    y: float  # baseline
     alpha: float = 1.0
     angle: float = 0.0  # degrees, counter-clockwise around (x, y)
 
@@ -94,9 +95,18 @@ def compose(card, index):
     letters = [(ch, key_x + key_font.getlength(key[:i])) for i, ch in enumerate(key)]
     if side < 0:
         letters.reverse()  # letters land from the card's outer edge inward
-    return dict(side=side, lead=lead.upper(), key=key, key_font=key_font, key_x=key_x, key_w=key_w,
-                kicker_base=kicker_base, key_base=key_base, letters=letters,
-                kicker_font=ImageFont.truetype(str(KICKER_FONT), KICKER_SIZE))
+    return dict(
+        side=side,
+        lead=lead.upper(),
+        key=key,
+        key_font=key_font,
+        key_x=key_x,
+        key_w=key_w,
+        kicker_base=kicker_base,
+        key_base=key_base,
+        letters=letters,
+        kicker_font=ImageFont.truetype(str(KICKER_FONT), KICKER_SIZE),
+    )
 
 
 def entering_glyphs(g, card, t):
@@ -108,7 +118,7 @@ def entering_glyphs(g, card, t):
         track = KICKER_SIZE * (KICKER_TRACK_FROM + (KICKER_TRACK - KICKER_TRACK_FROM) * ease_out_cubic(p))
         widths = [font.getlength(ch) for ch in g["lead"]]
         x = MARGIN_X if g["side"] > 0 else W - MARGIN_X - (sum(widths) + track * (len(widths) - 1))
-        for ch, w in zip(g["lead"], widths):
+        for ch, w in zip(g["lead"], widths, strict=True):
             glyphs.append(Glyph(ch, font, x, g["kicker_base"], clamp01(p * 2)))
             x += w + track
 
@@ -118,9 +128,16 @@ def entering_glyphs(g, card, t):
         if p <= 0:
             continue
         a = (1 - ease_out_back(p)) * math.pi / 2  # arc angle: 90deg away -> 0 at rest, overshoots slightly
-        glyphs.append(Glyph(ch, g["key_font"], x - g["side"] * ARC_R * math.sin(a),
-                            g["key_base"] + ARC_R * (1 - math.cos(a)), clamp01(p * 3),
-                            g["side"] * math.degrees(a) * 0.6))
+        glyphs.append(
+            Glyph(
+                ch,
+                g["key_font"],
+                x - g["side"] * ARC_R * math.sin(a),
+                g["key_base"] + ARC_R * (1 - math.cos(a)),
+                clamp01(p * 3),
+                g["side"] * math.degrees(a) * 0.6,
+            )
+        )
     return glyphs
 
 
@@ -218,11 +235,24 @@ def card_scale(card, t):
 
 def scaled(layer, s, side):
     """Scale the card layer by s around its aligned top corner, so it shrinks into (or pops out of) that corner."""
-    if s == 1:
+    box = layer.getbbox()
+    if s == 1 or box is None:
         return layer
     ax, ay = (MARGIN_X if side > 0 else W - MARGIN_X), TEXT_TOP
-    return layer.transform(layer.size, Image.AFFINE, (1 / s, 0, ax - ax / s, 0, 1 / s, ay - ay / s),
-                           resample=Image.BICUBIC)
+    # Transform only where the scaled text lands (plus a margin for bicubic bleed), not the whole
+    # frame: same sample positions as a full-frame transform, so identical pixels, ~10x less work.
+    pad = 4
+    x0, y0 = (max(0, math.floor(a + (v - a) * s) - pad) for v, a in ((box[0], ax), (box[1], ay)))
+    x1, y1 = (min(lim, math.ceil(a + (v - a) * s) + pad) for v, a, lim in ((box[2], ax, W), (box[3], ay, H)))
+    region = layer.transform(
+        (x1 - x0, y1 - y0),
+        Image.AFFINE,
+        (1 / s, 0, ax + (x0 - ax) / s, 0, 1 / s, ay + (y0 - ay) / s),
+        resample=Image.BICUBIC,
+    )
+    out = Image.new("RGBA", layer.size)
+    out.paste(region, (x0, y0))
+    return out
 
 
 def shifted(layer, dx, opacity):

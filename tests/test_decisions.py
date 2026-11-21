@@ -1,12 +1,11 @@
 """Decision files follow the template in decisions/README.md, so the history stays readable."""
+
 import re
 from pathlib import Path
 
 import pytest
 
-import models
-
-DECISIONS = sorted(p for p in Path(models.ROOT, "decisions").glob("*.md") if p.name != "README.md")
+DECISIONS = sorted(p for p in (Path(__file__).parents[1] / "decisions").glob("*.md") if p.name != "README.md")
 AREAS = {"style", "video-type", "pipeline", "archive", "process"}
 
 
