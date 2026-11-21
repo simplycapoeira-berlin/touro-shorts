@@ -54,7 +54,7 @@ def test_named_files_exist(name):
 
 @pytest.mark.parametrize("name", BUDGETS)
 def test_named_commands_exist(name):
-    used = set(re.findall(r"touro-shorts (\w+)", DOCS[name])) - {"is", "command"}
+    used = set(re.findall(r"(?:run |`)touro-shorts (\w+)", DOCS[name]))  # invoked or in code, not prose
     assert used <= set(cli.COMMANDS), f"{name} uses unknown commands {sorted(used - set(cli.COMMANDS))}"
 
 

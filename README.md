@@ -106,7 +106,8 @@ fails. Clearing `in/` afterwards is up to you.
 
 ## License
 
-The fonts in [src/touro_shorts/fonts/](src/touro_shorts/fonts/) are Archivo, under the
-[SIL Open Font License 1.1](src/touro_shorts/fonts/OFL.txt). The TOURO logo
-(`docs/touro-logo.jpg`) belongs to [TOURO](https://www.youtube.com/@Tourocapoeira) and isn't
-covered by the code's license.
+[CC BY 4.0](LICENSE): use, change and share it, also commercially, with credit to
+touro-shorts by simplycapoeira-berlin. Two exceptions: the Archivo fonts in
+[src/touro_shorts/fonts/](src/touro_shorts/fonts/) keep the
+[SIL Open Font License 1.1](src/touro_shorts/fonts/OFL.txt), and the TOURO logo
+(`docs/touro-logo.jpg`) belongs to [TOURO](https://www.youtube.com/@Tourocapoeira).
