@@ -22,7 +22,8 @@ working:
 
 ## Rules that always apply
 
-- **Work on a branch and open a pull request.** Never push to `main` directly. CI runs
+- **Work on a branch and open a pull request.** `main` is protected: direct pushes are rejected,
+  and a pull request merges only with green CI and up to date with `main`. CI runs
   `uv run pytest` on every push; run it yourself before committing. A red test means stop and
   fix; never delete or weaken a test to get green.
 - **Every design or behaviour change** adds a file in `decisions/` (template in
