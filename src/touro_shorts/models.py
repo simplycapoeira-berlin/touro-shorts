@@ -1,15 +1,8 @@
 """Video types and edit files: what an edit may say, and what it means.
 
-An edit file (edits/*.json) declares:
-    "type"        one of MODELS (the model of the output; recipe in STYLE.md §8)
-    "clips"       [{"src", "start", "end", "speed", "intro", "text"}] in play order (timeline.py)
-    "output"      where the render goes, e.g. "out/<name>.mp4"
-    "brightness"  optional footage grade, -0.2..0.2
-    "cards"       text cards (cards.py); educational edits may omit them and get step cards
-
-`load` is the one way to read an edit. It rejects any edit that breaks a rule and lists every
-problem at once, so a typo or a broken edit from any collaborator fails before rendering.
-Extending: a new field must be added to the *_KEYS sets and to `problems`, with a test.
+The fields are documented in the README. `load` is the one way to read an edit: it lists every
+broken rule at once, so a typo from any collaborator fails before rendering. A new field goes
+into the *_KEYS sets and `problems`, with a test.
 """
 
 import json

@@ -1,0 +1,33 @@
+# Every check a change must pass. They run on each commit (after `uv run pre-commit install`),
+# and CI runs the same hooks on every push; `main` requires them. Tools come from uv.lock.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (lint, imports, complexity)
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy (types)
+        entry: uv run mypy src tests
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: vulture
+        name: vulture (dead code)
+        entry: uv run vulture
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: pytest
+        name: pytest (rules, docs, reference frames, render)
+        entry: uv run pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true

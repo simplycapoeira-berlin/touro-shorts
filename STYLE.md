@@ -13,7 +13,7 @@ constant there and update the reason here.
 | All type in ink `--sc-black` #111. **No blue.** | body text | Reads on the light gym walls and ceiling. Black + yellow only keeps the palette strong (v3 feedback). |
 | Yellow marker `--sc-yellow` #F7E018 over the lower part of the key word | `.sc-mark` | The site's one accent gesture. Only on the key word. |
 
-Fonts are the site's own woff2 files converted to TTF (`fonts/`).
+Fonts are the site's own woff2 files, converted once to TTF (`src/touro_shorts/fonts/`).
 
 **Footage grade:** the bright gym footage is darkened slightly per edit (`"brightness"`,
 e.g. −0.05 ≈ 10% less average brightness). Only the footage is graded, never the type, so black
@@ -32,7 +32,8 @@ and yellow stay exact and pop more against the calmer background.
   band (e.g. not during a jump kick), and sits above the head.
 - **The movement may remove the text.** When a kick sweeps through the text band, the kick
   knocks the letters off (`"kick": "left"|"right"`), and they scatter in the leg's direction.
-  This is the artistic payoff of the type living in the same space as the body.
+  This is the artistic payoff of the type living in the same space as the body, and it is
+  worth a short stretch without text.
 - At most one card on screen, ≤ 6 words.
 
 ## 3. Motion grammar ("follow the spirit of the movement")
@@ -75,24 +76,9 @@ card in the first second, right after any opening move clears the band.
 - The **last word is the key word** and carries the meaning ("talent" → "practice"). A pair of
   cards should read as one sentence split across two movements.
 
-## 5. Workflow
+## 5. Output
 
-```bash
-uv sync                                    # once: creates .venv from pyproject.toml + uv.lock
-# raw clips go in in/ (or anywhere: "$SC_CONTENT/...", absolute paths stay local); renders go to out/
-uv run touro-shorts peaks "in/<clip>.MOV"
-# write edits/<yymmdd>-<name>.json (copy one of the same type)
-uv run touro-shorts render edits/<yymmdd>-<name>.json   # -> out/<name>-v<n>.mp4, a new version each time
-uv run touro-shorts clean edits/<yymmdd>-<name>.json [n] # when the user is done: keep one version
-uv run pytest
-```
-
-`in/` and `out/` are never committed: footage and renders belong to the users who provide them.
-
-Needs `ffmpeg` on PATH (Homebrew). The fonts in `fonts/` were converted once from the site's
-woff2 files with fontTools. That is not a runtime dependency.
-
-Output: 1080×1920, 30 fps, H.264 CRF 17, AAC 192k, faststart. That is Instagram's preferred
+Commands are in the [README](README.md). Output: 1080×1920, 30 fps, H.264 CRF 17, AAC 192k, faststart. That is Instagram's preferred
 upload format. Any source works: iPhone 4K/60 fps portrait clips are rotated, scaled and cropped
 to fill the frame, and 60 fps sources give smooth 0.5× slow motion. Source metadata (GPS, device)
 is always stripped. The output carries `genre=<type>` and a JSON `comment` (type, edit, clips,
@@ -114,7 +100,7 @@ history and the reasons. See [decisions/README.md](decisions/README.md) for the 
   linearity.io/blog/kinetic-typography
 - Token-driven video pipelines (brand tokens defined once, motion layer shared):
   chuk-motion (Remotion + design tokens), Inkeep motion-video skill (`brand.ts` single source).
-  We follow the same pattern without the Node/Remotion stack, because one Python file is enough.
+  We follow the same pattern without the Node/Remotion stack: one small Python package is enough.
 
 ## 8. Video types (models)
 
@@ -153,7 +139,7 @@ the same video. So each type below is a recipe with no free choices left except 
   - **Finger count** (`intro`, ~0.8–0.9 s): from the hand rising to just after the fingers are
     clearly shown. Confirm it on a zoomed 10 fps crop of the upper body. The count must match
     the step number.
-  - **Move:** from 1.4 s before the move's peak to 1.4 s after it (2.8 s): lead-in, move,
+  - **Move:** from 1.4 s before the move's peak to 1.3 s after it (2.7 s): lead-in, move,
     recovery. The fixed lead puts the peak at a known time, which is the step card's beat.
   - Everything else (standing, walking into position) is dropped. It's silent.
 - **Text:** generated, not hand-timed.

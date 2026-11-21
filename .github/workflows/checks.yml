@@ -1,11 +1,11 @@
-name: tests
+name: checks
 
 on:
   push:
   pull_request:
 
 jobs:
-  pytest:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,7 +14,5 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install dependencies (exactly as locked)
         run: uv sync --locked
-      - name: Lint and format
-        run: uv run ruff check && uv run ruff format --check
-      - name: Run tests
-        run: uv run pytest -v
+      - name: Run the pre-commit hooks on every file
+        run: uv run pre-commit run --all-files --show-diff-on-failure
