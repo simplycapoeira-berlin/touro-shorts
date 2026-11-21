@@ -57,7 +57,7 @@ if something isn't covered, ask, then record the answer in STYLE.md.
      `crop=900:900:600:750` on 2160×3840 iPhone footage) plus its move, cut from peak − 1.4 s
      to peak + 1.7 s. No cards (they're generated and land on the fingers). Add a clip `text`
      only when the user names the step. Check that the count matches the step number.
-4. **Check the edit:** run `uv run test_shorts.py`.
+4. **Check the edit:** run `uv run pytest` (it validates every edit with `models.load` rules).
 5. **Render:** run `uv run shorts.py render edits/<file>.json` (output in `out/`).
 6. **Look at it.** Extract frames at `in`, `hit`, mid-hold and the exit / kick impact (cropped
    to the top 1100 px and stacked with `hstack`). Check:
@@ -66,8 +66,8 @@ if something isn't covered, ask, then record the answer in STYLE.md.
    - the kick impact lands on the foot (±2 frames).
    Fix the timing and render again before showing the user.
 7. **Send the render** to the user, with one line per change.
-8. **On feedback:** change the constants in `shorts.py` or the edit. Update STYLE.md's rules
-   **and** add a row to its iteration log. Update `test_shorts.py` if a rule became checkable.
+8. **On feedback:** change the constants in `cards.py` or the edit. Update STYLE.md's rules
+   **and** add a decision file in `decisions/`. Make new rules checkable (`models.problems` or `tests/`).
 9. **Archive only when asked**, with the Drive folder the user gives:
    `uv run shorts.py archive edits/<file>.json "<folder>"`. Report the archive folder it prints.
    Never delete anything from `in/` unless the user asks, and only after the archive succeeded.
