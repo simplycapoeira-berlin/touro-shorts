@@ -1,12 +1,13 @@
 ---
 name: capoeira-shorts
-description: Make or revise a Simplesmente Capoeira Instagram short with movement-timed brand text. Use when given a capoeira clip and text lines, or feedback on a rendered short.
+description: Make or revise a Simplesmente Capoeira Instagram short (sequence or educational type) from raw clips and text, with cuts, slow motion and movement-timed brand text. Use when given capoeira clips (e.g. in in/) and text, or feedback on a rendered short.
 ---
 
 # Capoeira shorts
 
-Turn a 12–20 s vertical capoeira clip plus one to three short lines into a short whose text moves
-with the body. STYLE.md has the full rules. This skill is the working procedure.
+Turn raw capoeira clips plus a little text into a 12–20 s vertical short. The video is cut and
+joined by type (`sequence` or `educational`), and its text moves with the body. STYLE.md has the
+full rules (§8 for the types). This skill is the working procedure.
 
 ## Taste (settled through feedback; details and history in STYLE.md)
 
@@ -28,12 +29,31 @@ with the body. STYLE.md has the full rules. This skill is the working procedure.
 
 ## Procedure
 
+The goal is repeatability. Users bring clips (usually in `in/`) and text. Every decision below
+follows a rule in STYLE.md §8, so the same inputs give the same edit. Don't invent a new look;
+if something isn't covered, ask, then record the answer in STYLE.md.
+
+0. **Classify.** Look at a full-length contact sheet of every clip:
+   `ffmpeg -i <clip> -vf "fps=2,scale=96:-2,tile=21x2" -frames:v 1 sheet.png`. Make sure the
+   tile holds every frame (fps × duration ≤ 42), or the sheet silently cuts the end off.
+   - One continuous flowing clip → `sequence`.
+   - Several "stand, show one move, return" clips → `educational`, one step per clip in
+     recording order.
+   - Clips that fit neither → ask the user.
+   - Check the audio too (`astats`). Silent intros can be cut; speech must not be cut
+     without asking.
 1. **Find when.** Run `uv run shorts.py peaks "<clip>"` for the strongest motion moments.
-2. **Find where.** Peaks say when, not where. Look at the body with a contact sheet:
-   `ffmpeg -ss <t> -t 5.6 -i <clip> -vf "fps=5,scale=180:320,tile=14x2" -frames:v 1 sheet.png`.
-   Note when the upper band is clear, and which way each kick sweeps through it.
-3. **Write the edit** in `edits/<yymmdd>-<name>.json` (copy an existing one). The input path
-   starts with `$SC_CONTENT/`.
+2. **Find where.** Peaks say when, not where. They also fire on turns and steps. Confirm every
+   move on a 10–15 fps sheet:
+   `ffmpeg -ss <t> -t 2.4 -i <clip> -vf "fps=10,scale=108:-2,tile=24x1" -frames:v 1 sheet.png`.
+   Note when the upper band is clear and which way each kick sweeps.
+3. **Write the edit** in `edits/<yymmdd>-<name>.json` (copy one of the same type). Clip paths are
+   repo-relative (`in/...`) or `$SC_CONTENT/...`, never absolute.
+   - `sequence`: the hook is the best kick/acrobatic moment, 1–1.5 s at speed 0.5. The body
+     runs from the first movement to ~1.5 s after the last spectacular move. Cards follow §8.
+     Timeline time = hook length + (source time − body start).
+   - `educational`: each clip is cut from peak − 1.7 s to peak + 1.9 s. No cards (they're
+     generated). Add a clip `text` only when the user names the step.
 4. **Check the edit:** run `uv run test_shorts.py`.
 5. **Render:** run `uv run shorts.py render edits/<file>.json` (output in `out/`).
 6. **Look at it.** Extract frames at `in`, `hit`, mid-hold and the exit / kick impact (cropped

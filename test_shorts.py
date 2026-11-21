@@ -10,8 +10,17 @@ blank = Image.new("RGBA", (shorts.W, shorts.H))
 
 for edit_path in Path(shorts.ROOT, "edits").glob("*.json"):
     edit = json.loads(edit_path.read_text())
+    assert edit.get("type") in shorts.MODELS, f"unknown video type: {edit_path}"
     assert -0.2 <= edit.get("brightness", 0) <= 0.2, f"brightness is a subtle grade, not a fix: {edit_path}"
-    for index, card in enumerate(edit["cards"]):
+    assert not any(c["src"].startswith(("/", "~")) for c in edit["clips"]), f"machine-specific clip path: {edit_path}"
+    for clip in edit["clips"]:
+        assert 0.5 <= clip.get("speed", 1) <= 2, f"speed outside 0.5..2: {clip}"
+        assert clip.get("start", 0) < clip.get("end", float("inf")), clip
+        if edit["type"] == "educational":
+            assert "start" in clip and "end" in clip, f"educational steps are explicit cuts: {clip}"
+    if edit["type"] == "sequence" and len(edit["clips"]) > 1:
+        assert edit["clips"][0].get("speed", 1) < 1, f"a sequence opens with a slow-motion hook: {edit_path}"
+    for index, card in enumerate(shorts.edit_cards(edit)):
         g = shorts.compose(card, index)
         assert shorts.MARGIN_X <= g["key_x"] and g["key_x"] + g["key_w"] <= shorts.W - shorts.MARGIN_X + 1, card
         kicker_w = sum(g["kicker_font"].getlength(c) for c in g["lead"]) + shorts.KICKER_SIZE * shorts.KICKER_TRACK * (len(g["lead"]) - 1)

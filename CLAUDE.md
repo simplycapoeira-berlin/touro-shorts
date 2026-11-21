@@ -10,7 +10,9 @@ Rules that always apply:
 
 - Every design change updates STYLE.md in the same change: the rule section, plus a new row in
   the iteration log (feedback → decision, newest first). Keep `test_shorts.py` in sync with the rules.
-- Never commit raw clips, renders (`out/`) or machine-specific paths. Clip paths in edit files
-  use `$SC_CONTENT/...`.
+- Never commit raw clips (`in/`), renders (`out/`) or machine-specific paths. Clip paths in
+  edit files are repo-relative (`in/...`) or use `$SC_CONTENT/...`.
+- Every edit declares a video `type` from `MODELS` in `shorts.py`, recipe in STYLE.md §8.
+  A new kind of video gets a new type (code + §8 + iteration log), never a one-off edit.
 - Verify visually: extract frames from the render with ffmpeg and look at them before
   claiming an edit is done.

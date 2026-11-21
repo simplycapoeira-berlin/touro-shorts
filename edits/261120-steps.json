@@ -1,0 +1,12 @@
+{
+  "type": "educational",
+  "clips": [
+    {"src": "in/IMG_7013.MOV", "start": 7.5, "end": 11.1},
+    {"src": "in/IMG_7014.MOV", "start": 4.9, "end": 8.5},
+    {"src": "in/IMG_7015.MOV", "start": 3.6, "end": 7.2},
+    {"src": "in/IMG_7016.MOV", "start": 2.9, "end": 6.5},
+    {"src": "in/IMG_7017.MOV", "start": 3.2, "end": 6.8}
+  ],
+  "output": "out/261120-steps.mp4",
+  "brightness": -0.05
+}

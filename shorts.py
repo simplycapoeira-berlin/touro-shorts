@@ -1,10 +1,16 @@
-"""Burn brand-styled, movement-timed text cards into a vertical capoeira clip.
+"""Turn raw capoeira clips into a finished vertical short: cut, join, grade, then animate
+brand-styled, movement-timed text cards on top.
 
 Usage:
-    uv run shorts.py peaks <clip>        # print motion peaks, to pick card timings
+    uv run shorts.py peaks <clip>        # print motion peaks, to pick cuts and card timings
     uv run shorts.py render <edit.json>  # render the edit described in the JSON
 
-An edit file lists text cards. The last word of each card is its key word: it is set huge
+An edit file declares its video "type" (see MODELS), its "clips" (timeline.py), an "output"
+path, an optional "brightness", and its text cards. Educational edits may omit "cards": each
+clip then gets a numbered step card automatically (its optional "text", or "Step <n>").
+The type and the sources are written into the output's metadata.
+
+Text cards: the last word of each card is its key word. The last word of each card is its key word: it is set huge
 and marked in yellow; the words before it form the small kicker line above. Each card is timed
 to the movement:
     {"text": "It is not about talent", "in": s, "hit": s, "out": s, "kick": "left"}
@@ -17,14 +23,13 @@ to the movement:
          readable but out of the movement's way until `out` (bridges a long gap to the next card)
 Cards alternate left / right alignment. Design rules behind every constant: STYLE.md.
 
-The edit's "input" may use environment variables, e.g. "$SC_CONTENT/movimento/clip.mov", so
-edit files never contain a machine-specific (or private) path. An optional edit-level
-"brightness" (ffmpeg eq, -1..1, default 0) grades the footage only, so the type keeps its exact
-brand colors.
+Clip and output paths may use environment variables (e.g. "$SC_CONTENT/...") or be relative to
+the repo (e.g. "in/IMG_7011.MOV"), so edit files never contain a machine-specific (or private)
+path. "brightness" (ffmpeg eq, -1..1, default 0) grades the footage only, so the type keeps its
+exact brand colors.
 """
 import json
 import math
-import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -33,7 +38,19 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+import timeline
+
 ROOT = Path(__file__).parent
+
+# Video types (STYLE.md §8). The key goes into every output's metadata; the description is the
+# structure an edit of that type follows.
+MODELS = {
+    "sequence": "one continuous movement sequence, opened by a slow-motion hook of its most "
+                "spectacular move; hand-timed cards ride and get kicked by the movement",
+    "educational": "step by step: one cut per technique, each opened by an automatic numbered "
+                   "step card",
+}
+STEP_IN, STEP_HIT, STEP_GAP = 0.15, 0.8, 0.35  # step card timing inside its cut, seconds
 
 # Brand tokens, taken from sc-capoeira.de (css: --sc-black, --sc-yellow, Archivo).
 INK = (17, 17, 17)
@@ -42,7 +59,7 @@ KEY_FONT = ROOT / "fonts" / "archivo-900.ttf"     # .sc-hero__title weight
 KICKER_FONT = ROOT / "fonts" / "archivo-800.ttf"  # .sc-kicker weight
 
 # Frame and Instagram safe zone (UI covers ~14% top, ~35% bottom, rail on the right).
-W, H = 1080, 1920
+W, H = timeline.W, timeline.H
 MARGIN_X = 72
 SAFE_W = W - 2 * MARGIN_X
 TEXT_TOP = 280
@@ -240,23 +257,40 @@ def shifted(layer, dx, opacity):
     return out
 
 
+def edit_cards(edit):
+    """The edit's text cards: explicit "cards", or for educational edits one step card per clip."""
+    if "cards" in edit:
+        return edit["cards"]
+    if edit["type"] != "educational":
+        return []
+    spans = timeline.segments(edit["clips"], ROOT)
+    return [{"text": clip.get("text", f"Step {n}"), "in": start + STEP_IN, "hit": start + STEP_HIT,
+             "out": end - STEP_GAP} for n, (clip, (start, end)) in enumerate(zip(edit["clips"], spans), 1)]
+
+
 def render(edit_path):
     edit = json.loads(Path(edit_path).read_text())
-    src, dst = Path(os.path.expandvars(edit["input"])).expanduser(), ROOT / edit["output"]
-    if not src.is_file():
-        sys.exit(f"input clip not found: {src} (is $SC_CONTENT set?)")
+    if edit.get("type") not in MODELS:
+        sys.exit(f'"type" must be one of {sorted(MODELS)}')
+    dst = timeline.source(ROOT, edit["output"])
     dst.parent.mkdir(parents=True, exist_ok=True)
-    cards = [(compose(c, i), c) for i, c in enumerate(edit["cards"])]
-    fps = 30
+    cut = dst.with_suffix(".timeline.mp4")
+    timeline.assemble(edit["clips"], edit.get("brightness", 0), ROOT, cut)
+    cards = [(compose(c, i), c) for i, c in enumerate(edit_cards(edit))]
+    fps = timeline.FPS
+    metadata = json.dumps({"type": edit["type"], "edit": Path(edit_path).name,
+                           "clips": [Path(c["src"]).name for c in edit["clips"]],
+                           "text": [c["text"] for _, c in cards]})
 
-    decode = subprocess.Popen(
-        ["ffmpeg", "-v", "error", "-i", str(src), "-vf", f"scale={W}:{H},fps={fps},eq=brightness={edit.get('brightness', 0)}",
-         "-f", "rawvideo", "-pix_fmt", "rgba", "-"], stdout=subprocess.PIPE)
+    decode = subprocess.Popen(["ffmpeg", "-v", "error", "-i", str(cut), "-f", "rawvideo", "-pix_fmt", "rgba", "-"],
+                              stdout=subprocess.PIPE)
     encode = subprocess.Popen(
         ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", f"{W}x{H}",
-         "-r", str(fps), "-i", "-", "-i", str(src), "-map", "0:v", "-map", "1:a?",
+         "-r", str(fps), "-i", "-", "-i", str(cut), "-map", "0:v", "-map", "1:a",
          "-c:v", "libx264", "-crf", "17", "-preset", "medium", "-pix_fmt", "yuv420p",
-         "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(dst)],
+         "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart",
+         "-map_metadata", "-1", "-metadata", f"genre={edit['type']}", "-metadata", f"comment={metadata}",
+         str(dst)],
         stdin=subprocess.PIPE)
 
     frame_bytes, index = W * H * 4, 0
@@ -271,7 +305,8 @@ def render(edit_path):
     encode.stdin.close()
     if encode.wait() != 0:
         sys.exit("ffmpeg encode failed")
-    print(f"{dst}  ({index} frames)")
+    cut.unlink()
+    print(f"{dst}  ({index} frames, {edit['type']})")
 
 
 def peaks(clip, top=6):

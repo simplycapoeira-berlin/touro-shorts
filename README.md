@@ -34,38 +34,71 @@ Needs [uv](https://docs.astral.sh/uv/) and `ffmpeg` on PATH (`brew install uv ff
 
 ```bash
 uv sync
-export SC_CONTENT="/path/to/sc-content"   # root folder of the raw clips
+mkdir -p in out   # raw clips go in in/, renders land in out/ (both stay local, never pushed)
 ```
+
+Clips can also live anywhere else: edit paths may be absolute on your machine or use
+environment variables like `$SC_CONTENT/...`.
+
+## Video types
+
+Every edit declares a `type`, the model of the output. It's stored in the output's metadata
+(`genre` and a JSON `comment`). The full recipes are in [STYLE.md §8](STYLE.md).
+
+| Type | Input | Output |
+|---|---|---|
+| `sequence` | one continuous movement clip and a sentence | a 0.5× slow-motion hook of the best move, then the sequence; two text cards that the kicks knock away |
+| `educational` | one clip per technique | one cut per move with automatic STEP 1, 2, 3… cards |
 
 ## Make a short
 
 ```bash
-uv run shorts.py peaks "$SC_CONTENT/movimento/<clip>.mov"   # when the strongest moves happen
-cp edits/261117-touro.json edits/<date>-<name>.json            # then edit text + timings
-uv run shorts.py render edits/<date>-<name>.json               # -> out/<name>.mp4
-uv run test_shorts.py                                          # checks every edit against STYLE.md
+uv run shorts.py peaks in/<clip>.MOV            # when the strongest moves happen
+cp edits/261120-sequence.json edits/<yymmdd>-<name>.json   # copy an edit of the same type
+uv run shorts.py render edits/<yymmdd>-<name>.json         # -> out/<name>.mp4
+uv run test_shorts.py                           # checks every edit against STYLE.md
 ```
 
-An edit file:
+A sequence edit:
 
 ```json
 {
-  "input": "$SC_CONTENT/movimento/261117-ksg-movimento/touro-sequence-edit.mov",
-  "output": "out/261117-touro.mp4",
+  "type": "sequence",
+  "clips": [
+    {"src": "in/IMG_7011.MOV", "start": 11.6, "end": 12.7, "speed": 0.5},
+    {"src": "in/IMG_7011.MOV", "start": 1.0, "end": 16.6}
+  ],
+  "output": "out/261120-sequence.mp4",
   "brightness": -0.05,
   "cards": [
-    {"text": "It is not about talent", "in": 0.6, "hit": 1.25, "shrink": 5.0, "out": 15.9, "kick": "left"},
-    {"text": "It is about practice", "in": 17.6, "hit": 18.25, "out": 19.6, "kick": "left"}
+    {"text": "It is not about talent", "in": 0.9, "hit": 1.55, "shrink": 5.0, "out": 12.95, "kick": "left"},
+    {"text": "It is about practice", "in": 13.9, "hit": 14.55, "out": 16.1, "kick": "left"}
   ]
 }
 ```
 
-- The last word of each card is its key word: set huge, with the yellow marker.
-- `in`: the card starts appearing. `hit`: the key word has landed. `out`: the card starts leaving.
-- `kick` (optional, `left`/`right`): at `out`, a kick knocks the letters away in that direction.
-- `brightness` (optional, edit level, −1..1): darkens or brightens the footage only, never the text.
-- `shrink` (optional time): the card shrinks into its corner from here until `out`, bridging a
-  long gap to the next card.
+An educational edit needs no cards. Each clip becomes one step:
+
+```json
+{
+  "type": "educational",
+  "clips": [
+    {"src": "in/IMG_7013.MOV", "start": 7.5, "end": 11.1},
+    {"src": "in/IMG_7014.MOV", "start": 4.9, "end": 8.5, "text": "Step 2 aú"}
+  ],
+  "output": "out/261120-steps.mp4"
+}
+```
+
+- **Clips:** `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
+  slow motion). Clips are joined in order with hard cuts.
+- **Cards:** the last word of each card is its key word, set huge with the yellow marker.
+  - `in`: the card starts appearing. `hit`: the key word has landed. `out`: the card starts
+    leaving. Times are on the final timeline.
+  - `kick` (optional, `left`/`right`): at `out`, a kick knocks the letters away in that direction.
+  - `shrink` (optional time): the card shrinks into its corner from here until `out`, bridging a
+    long gap to the next card.
+- **`brightness`** (optional, −1..1): darkens or brightens the footage only, never the text.
 
 ## Working with Claude Code
 

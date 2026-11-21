@@ -1,0 +1,13 @@
+{
+  "type": "sequence",
+  "clips": [
+    {"src": "in/IMG_7011.MOV", "start": 11.6, "end": 12.7, "speed": 0.5},
+    {"src": "in/IMG_7011.MOV", "start": 1.0, "end": 16.6}
+  ],
+  "output": "out/261120-sequence.mp4",
+  "brightness": -0.05,
+  "cards": [
+    {"text": "It is not about talent", "in": 0.9, "hit": 1.55, "shrink": 5.0, "out": 12.95, "kick": "left"},
+    {"text": "It is about practice", "in": 13.9, "hit": 14.55, "out": 16.1, "kick": "left"}
+  ]
+}

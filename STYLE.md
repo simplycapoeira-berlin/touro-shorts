@@ -74,17 +74,23 @@ card in the first second, right after any opening move clears the band.
 
 ```bash
 uv sync                                    # once: creates .venv from pyproject.toml + uv.lock
-export SC_CONTENT=/path/to/sc-content      # edit inputs are "$SC_CONTENT/..."
-uv run shorts.py peaks "<clip.mov>"
-# write edits/<date>-<name>.json (copy an existing one)
-uv run shorts.py render edits/<date>-<name>.json   # -> out/
+# raw clips go in in/ (or anywhere: "$SC_CONTENT/...", absolute paths stay local); renders go to out/
+uv run shorts.py peaks "in/<clip>.MOV"
+# write edits/<yymmdd>-<name>.json (copy one of the same type)
+uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/
 uv run test_shorts.py
 ```
+
+`in/` and `out/` are never committed: footage and renders belong to the users who provide them.
 
 Needs `ffmpeg` on PATH (Homebrew). The fonts in `fonts/` were converted once from the site's
 woff2 files with fontTools. That is not a runtime dependency.
 
-Output: H.264 CRF 17, AAC 192k, 30 fps, faststart. That is Instagram's preferred upload format.
+Output: 1080×1920, 30 fps, H.264 CRF 17, AAC 192k, faststart. That is Instagram's preferred
+upload format. Any source works: iPhone 4K/60 fps portrait clips are rotated, scaled and cropped
+to fill the frame, and 60 fps sources give smooth 0.5× slow motion. Source metadata (GPS, device)
+is always stripped. The output carries `genre=<type>` and a JSON `comment` (type, edit, clips,
+texts) instead.
 
 ## 6. Iteration log
 
@@ -92,6 +98,7 @@ Record every round of feedback here: what was asked, and the decision it led to.
 
 | Version | Feedback | Decision |
 |---|---|---|
+| v7 (2026-11-21) | New raw clips in `in/`. Two edits: one like before (an attention-heavy movement first, then the sequence with our type, same text for now), and one educational step-by-step video with cuts. Classify the target videos as models (types) and keep them as output metadata. Later, users only bring videos and text and everything runs reliably and repeatably. | Two video types (§8): `sequence` and `educational`. New `clips` timeline (cut, slow motion, join, rotate/scale any source) replaces the single `input`. `in/` and `out/` are git-ignored. 261120-sequence: 0.5× hook of IMG_7011's armada and high kick, then the sequence; "talent" lands during the hook and is kicked out by the armada at 12.95 s; "practice" is kicked out by the aú at 16.1 s; the calm ginga tail is trimmed (17.8 s total). 261120-steps: IMG_7013–7017 cut to their move (peak −1.7 s / +1.9 s), with automatic STEP 1–5 cards (18 s). Outputs carry the type in their metadata, and GPS is stripped. |
 | v6 (2026-11-20) | The video is great; make it look a little darker. | New edit-level `brightness` (ffmpeg eq), applied to the footage before the text is drawn. Touro edit: −0.05 (mean brightness 158.6 → 143.1). Text and timings unchanged. |
 | v5 (2026-11-20) | v4 is good. After second 15, the kick should throw the first sentence out; everything else stays the same. | The shrunken "talent" now gets `"kick": "left"` with its impact at 15.9 s, the frame the foot sweeps right to left through the top-left corner. "practice" is unchanged (17.6 s, armada at 19.6 s). Both sentences now leave by a kick. |
 | v4 (2026-11-20) | Good design overall, but the first sentence disappears and the gap to the second is too long. Keep the first sentence's start as it is; after 5 s it should shrink until the second sentence replaces it. | New optional `shrink` time: the card scales into its top corner (to 45%, ease-out) and stays until it's swapped. Touro edit: "talent" from 0.6 s, shrinking from 5.0 s, out at 17.3 s, ending as "practice" enters at 17.6 s. The kick exit is unchanged. |
@@ -109,3 +116,42 @@ Record every round of feedback here: what was asked, and the decision it led to.
 - Token-driven video pipelines (brand tokens defined once, motion layer shared):
   chuk-motion (Remotion + design tokens), Inkeep motion-video skill (`brand.ts` single source).
   We follow the same pattern without the Node/Remotion stack, because one Python file is enough.
+
+## 8. Video types (models)
+
+Every edit declares a `type`. The type is the model of the output: it fixes the structure, the
+text behaviour and how the edit is derived from raw clips, and it is written into the output's
+metadata. The goal is that a user only brings clips and text, and the same inputs always produce
+the same video. So each type below is a recipe with no free choices left except the inputs.
+
+### `sequence`: one flowing movement sequence
+
+- **Input:** one continuous clip of a sequence (plus the text).
+- **Structure:** a **hook**, then the sequence.
+  - Hook: the most spectacular 1–1.5 s of the clip (the strongest motion peak that is a kick
+    or acrobatic move, checked on frames) at 0.5× speed, from a 60 fps source.
+  - Sequence: from the first movement (skip standing still) to ~1.5 s after the last
+    spectacular move. Cut calm tails.
+  - Total 12–20 s.
+- **Text:** two cards (the sentence split in two, as in §4).
+  - Card 1 lands its key word on the hook's peak, shrinks from 5 s (§3, 4b), and is kicked out
+    by a real kick later in the sequence.
+  - Card 2 enters ~1 s after that and is kicked out by the last spectacular move.
+  - Every kick time must be checked on frames. Motion peaks also fire on steps and turns.
+
+### `educational`: step-by-step techniques
+
+- **Input:** one clip per technique, filmed as "stand, show, return".
+- **Structure:** one cut per step, in recording order.
+  - Each cut runs from 1.7 s before the move's peak to 1.9 s after it (3.6 s): lead-in, move,
+    recovery.
+  - Standing and explaining parts are dropped (they're silent).
+  - Hard cuts between steps.
+- **Text:** generated, not hand-timed.
+  - Each step opens with a card: kicker "STEP", key word = the step number (or the clip's
+    `text`, whose last word becomes the key word).
+  - The card lands 0.8 s into its cut and leaves 0.35 s before the cut ends.
+  - Cards alternate left/right, so consecutive steps answer each other.
+
+Shared by all types: brand (§1), composition (§2), motion grammar (§3), house grade −0.05
+brightness, 1080×1920/30 fps output.

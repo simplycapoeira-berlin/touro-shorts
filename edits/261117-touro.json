@@ -1,5 +1,6 @@
 {
-  "input": "$SC_CONTENT/movimento/261117-ksg-movimento/touro-sequence-edit.mov",
+  "type": "sequence",
+  "clips": [{"src": "$SC_CONTENT/movimento/261117-ksg-movimento/touro-sequence-edit.mov"}],
   "output": "out/261117-touro.mp4",
   "brightness": -0.05,
   "cards": [
