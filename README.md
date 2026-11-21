@@ -91,7 +91,8 @@ followed by its move:
 }
 ```
 
-- **Clips:** `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
+- **Clips:** the first clip of a multi-clip edit is the hook (`"hook": true`): slow motion in
+  a sequence, real speed in an educational video. `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
   slow motion). `intro` [start, end] plays a second cut of the same source first (the finger
   count). Clips are joined in order with hard cuts.
 - **Cards:** the last word of each card is its key word, set huge with the yellow marker.

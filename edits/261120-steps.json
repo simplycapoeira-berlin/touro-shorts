@@ -1,7 +1,7 @@
 {
   "type": "educational",
   "clips": [
-    {"src": "in/IMG_7017.MOV", "start": 4.55, "end": 5.35, "speed": 0.5},
+    {"src": "in/IMG_7017.MOV", "start": 4.5, "end": 5.4, "hook": true},
     {"src": "in/IMG_7013.MOV", "intro": [2.5, 3.4], "start": 7.3, "end": 10.1},
     {"src": "in/IMG_7014.MOV", "intro": [1.1, 1.9], "start": 5.2, "end": 8.0},
     {"src": "in/IMG_7015.MOV", "intro": [0.6, 1.5], "start": 3.9, "end": 6.7},

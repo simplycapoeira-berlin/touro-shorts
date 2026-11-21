@@ -55,7 +55,8 @@ KICK_FADE = 0.45          # s for a struck letter to fade out
 SHRINK_TO = 0.45          # scale of a shrunk card
 SHRINK_SNAP = 0.35        # s: the card snaps small with a springy overshoot, not a slow fade-down
 BEAT_POP = 0.12           # a beat (a kick or move) punches the card 12% bigger...
-BEAT_DUR = 0.3            # ...for this long, and re-sweeps the yellow marker under the key word
+BEAT_DUR = 0.3            # ...for this long, and draws a yellow underline under the key word
+UNDERLINE_SWEEP = 0.2     # s for a kick to draw the underline, in the card's direction
 
 
 @dataclass
@@ -125,11 +126,8 @@ def entering_glyphs(g, card, t):
 
 
 def marker_box(g, card, t):
-    """Yellow highlighter band over the lower part of the key word, like .sc-mark; None before it
-    starts. Each beat redraws it from scratch, so the move underlines the word again."""
-    last_beat = max((b for b in card.get("beats", []) if b <= t), default=None)
-    sweep = (clamp01((t - last_beat) / MARK_SWEEP) if last_beat is not None
-             else clamp01((t - card["hit"] + MARK_SWEEP) / MARK_SWEEP))
+    """Yellow highlighter band over the lower part of the key word, like .sc-mark; None before it starts."""
+    sweep = clamp01((t - card["hit"] + MARK_SWEEP) / MARK_SWEEP)
     if sweep <= 0:
         return None
     size = g["key_font"].size
@@ -137,6 +135,19 @@ def marker_box(g, card, t):
     span = (right - left) * ease_out_cubic(sweep)
     x0, x1 = (left, left + span) if g["side"] > 0 else (right - span, right)
     return [x0, g["key_base"] - 0.30 * size, x1, g["key_base"] + 0.06 * size]
+
+
+def underline_box(g, card, t):
+    """Thick yellow line under the key word, drawn by a kick: the first beat draws it and every
+    later beat draws it again, like signing the word. None before the first beat."""
+    last_beat = max((b for b in card.get("beats", []) if b <= t), default=None)
+    if last_beat is None:
+        return None
+    size = g["key_font"].size
+    left, right = g["key_x"] - 10, g["key_x"] + g["key_w"] + 10
+    span = (right - left) * ease_out_cubic(clamp01((t - last_beat) / UNDERLINE_SWEEP))
+    x0, x1 = (left, left + span) if g["side"] > 0 else (right - span, right)
+    return [x0, g["key_base"] + 0.13 * size, x1, g["key_base"] + 0.21 * size]
 
 
 def kick(glyphs, card, t):
@@ -158,10 +169,12 @@ def kick(glyphs, card, t):
         gl.alpha *= 1 - clamp01(s / KICK_FADE)
 
 
-def paint(layer, glyphs, marker, marker_alpha):
+def paint(layer, glyphs, boxes, box_alpha):
+    """Draw the yellow boxes (marker, underline) under the glyphs."""
     draw = ImageDraw.Draw(layer)
-    if marker and marker_alpha > 0:
-        draw.rectangle(marker, fill=MARK + (int(255 * marker_alpha),))
+    for box in boxes:
+        if box_alpha > 0:
+            draw.rectangle(box, fill=MARK + (int(255 * box_alpha),))
     for gl in glyphs:
         if gl.alpha <= 0:
             continue
@@ -181,18 +194,19 @@ def overlay_card(frame, g, card, t):
     leave = KICK_WAVE + KICK_FADE if card.get("kick") else EXIT
     if not card["in"] <= t <= card["out"] + leave:
         return frame
-    glyphs, marker = entering_glyphs(g, card, t), marker_box(g, card, t)
+    glyphs = entering_glyphs(g, card, t)
+    boxes = [box for box in (marker_box(g, card, t), underline_box(g, card, t)) if box]
     hold = clamp01((min(t, card["out"]) - card["hit"]) / max(card["out"] - card["hit"], 1e-6))
     for gl in glyphs:
         gl.x += g["side"] * DRIFT * hold
-    if marker:
-        marker[0] += g["side"] * DRIFT * hold
-        marker[2] += g["side"] * DRIFT * hold
+    for box in boxes:
+        box[0] += g["side"] * DRIFT * hold
+        box[2] += g["side"] * DRIFT * hold
 
     layer = Image.new("RGBA", (W, H))
     if card.get("kick"):
         kick(glyphs, card, t)
-    paint(layer, glyphs, marker, 1 - clamp01((t - card["out"]) / 0.1) if card.get("kick") else 1.0)
+    paint(layer, glyphs, boxes, 1 - clamp01((t - card["out"]) / 0.1) if card.get("kick") else 1.0)
     layer = scaled(layer, card_scale(card, min(t, card["out"])), g["side"])
     if card.get("kick"):
         return Image.alpha_composite(frame, layer)

@@ -27,7 +27,8 @@ full rules (§8 for the types). This skill is the working procedure.
   is worth a quiet stretch with no text.
 - No looping motion. Every motion either brings information in or takes it out, or answers
   a move (`beats`: the card pops and the kick underlines the key word again).
-- Every video opens with a slow-motion hook, educational ones included (no card on the hook).
+- Every multi-clip video opens with a hook (`"hook": true` on the first clip, no card): slow
+  motion in a sequence, Touro's real speed in an educational video.
 
 ## Procedure
 

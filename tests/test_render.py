@@ -28,7 +28,7 @@ def rendered(tmp_path_factory):
                     "-metadata", "location=+52.5200+013.4050/", "-c:v", "libx264", "-c:a", "aac", str(clip)], check=True)
     edit = {
         "type": "sequence",
-        "clips": [{"src": str(clip), "start": 1.0, "end": 1.5, "speed": 0.5}, {"src": str(clip), "start": 0, "end": 3.0}],
+        "clips": [{"src": str(clip), "start": 1.0, "end": 1.5, "speed": 0.5, "hook": True}, {"src": str(clip), "start": 0, "end": 3.0}],
         "output": str(tmp / "out.mp4"),
         "brightness": -0.05,
         "cards": [{"text": "It is not about talent", "in": 0.2, "hit": 0.8, "out": 2.5, "kick": "left"}],

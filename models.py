@@ -25,20 +25,21 @@ ROOT = Path(__file__).parent
 MODELS = {
     "sequence": "one continuous movement sequence, opened by a slow-motion hook of its most "
                 "spectacular move; hand-timed cards ride and get kicked by the movement",
-    "educational": "step by step: per technique the finger count, then the move; an automatic "
-                   "numbered step card lands on the fingers",
+    "educational": "opened by the most impressive move at real speed, then step by step: per "
+                   "technique the finger count, then the move; an automatic numbered step card "
+                   "lands on the fingers and the move underlines it",
 }
 STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
 PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's peak (STYLE.md §8)
 
 EDIT_KEYS = {"type", "clips", "output", "brightness", "cards"}
-CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text"}
+CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text", "hook"}
 CARD_KEYS = {"text", "in", "hit", "out", "kick", "shrink", "beats"}
 
 
 def has_hook(edit):
-    """Every type may open with a hook: a first clip slowed below normal speed."""
-    return len(edit["clips"]) > 1 and edit["clips"][0].get("speed", 1) < 1
+    """Every video with several clips opens with a hook: its first clip, marked "hook": true."""
+    return bool(edit["clips"]) and edit["clips"][0].get("hook", False)
 
 
 def play_clips(edit):
@@ -48,7 +49,7 @@ def play_clips(edit):
     for clip in edit["clips"]:
         if "intro" in clip:
             clips.append({"src": clip["src"], "start": clip["intro"][0], "end": clip["intro"][1]})
-        clips.append({k: v for k, v in clip.items() if k not in ("intro", "text")})
+        clips.append({k: v for k, v in clip.items() if k not in ("intro", "text", "hook")})
     return clips
 
 
@@ -97,8 +98,15 @@ def problems(edit):
             intro = clip.get("intro", [0, 0.5])
             require(0.5 <= intro[1] - intro[0] <= 1.2, f"finger count (intro) should last 0.5..1.2 s: {clip}")
             require(intro[1] <= clip.get("start", 0), f"finger count (intro) comes before the move: {clip}")
-    if len(edit.get("clips", [])) > 1:
-        require(edit["clips"][0].get("speed", 1) < 1, "a video opens with a slow-motion hook (first clip speed < 1)")
+    clips = edit.get("clips", [])
+    if len(clips) > 1:
+        require(clips[0].get("hook", False), 'a video with several clips opens with a hook (first clip "hook": true)')
+    require(not any(c.get("hook") for c in clips[1:]), "only the first clip can be the hook")
+    if clips and clips[0].get("hook"):
+        if kind == "sequence":
+            require(clips[0].get("speed", 1) < 1, "a sequence hook plays in slow motion (speed < 1)")
+        if kind == "educational":
+            require(clips[0].get("speed", 1) == 1, "an educational hook plays at Touro's real speed (no speed change)")
     if found:
         return found  # card checks below assume a well-formed edit
 

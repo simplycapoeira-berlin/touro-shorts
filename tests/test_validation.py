@@ -7,7 +7,7 @@ import models
 
 GOOD = {
     "type": "sequence",
-    "clips": [{"src": "in/a.mov", "start": 1.0, "end": 2.0, "speed": 0.5}, {"src": "in/a.mov", "start": 0, "end": 10}],
+    "clips": [{"src": "in/a.mov", "start": 1.0, "end": 2.0, "speed": 0.5, "hook": True}, {"src": "in/a.mov", "start": 0, "end": 10}],
     "output": "out/a.mp4",
     "cards": [{"text": "It is not about talent", "in": 0.5, "hit": 1.1, "out": 4.0, "kick": "left"}],
 }
@@ -31,7 +31,9 @@ def test_good_edit_passes():
     (lambda e: e["clips"][0].update(sped=0.5), "unknown clip keys"),
     (lambda e: e["clips"][0].update(speed=0.25), "speed must be 0.5..2"),
     (lambda e: e["clips"][1].update(start=12), "start must be before end"),
-    (lambda e: e["clips"][0].update(speed=1), "slow-motion hook"),
+    (lambda e: e["clips"][0].pop("hook"), "opens with a hook"),
+    (lambda e: e["clips"][0].update(speed=1), "sequence hook plays in slow motion"),
+    (lambda e: e["clips"][1].update(hook=True), "only the first clip"),
     (lambda e: e["cards"][0].update(kik="left"), "unknown card keys"),
     (lambda e: e["cards"][0].update(text="talent"), "2..6 words"),
     (lambda e: e["cards"][0].update(hit=0.4), "in < hit < out"),
@@ -56,7 +58,7 @@ def test_educational_steps_need_explicit_cuts_and_a_short_finger_count():
 
 def test_educational_cards_are_generated_per_step():
     edit = {"type": "educational", "output": "out/s.mp4", "clips": [
-        {"src": "in/a.mov", "start": 4.0, "end": 4.25, "speed": 0.5},
+        {"src": "in/a.mov", "start": 4.0, "end": 4.5, "hook": True},
         {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 6.0},
         {"src": "in/b.mov", "start": 2.0, "end": 5.0, "text": "Step 2 aú"}]}
     steps = models.edit_cards(edit)
@@ -76,9 +78,16 @@ def test_load_lists_every_problem_and_exits(tmp_path):
 
 def test_educational_hook_gets_no_card_and_steps_get_their_peak_as_beat():
     edit = {"type": "educational", "output": "out/s.mp4", "clips": [
-        {"src": "in/a.mov", "start": 4.0, "end": 5.0, "speed": 0.5},
+        {"src": "in/a.mov", "start": 4.0, "end": 6.0, "hook": True},
         {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 5.8}]}
     (step,) = models.edit_cards(edit)
     assert step["text"] == "Step 1" and step["in"] == pytest.approx(2.0 + models.STEP_IN)
     assert step["beats"] == [pytest.approx(2.0 + 0.8 + models.PEAK_LEAD)]  # hook + intro + lead to the peak
     assert models.problems(edit) == []
+
+
+def test_educational_hook_keeps_real_speed():
+    edit = {"type": "educational", "output": "out/s.mp4", "clips": [
+        {"src": "in/a.mov", "start": 4.0, "end": 5.0, "speed": 0.5, "hook": True},
+        {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 5.8}]}
+    assert any("real speed" in m for m in models.problems(edit))
