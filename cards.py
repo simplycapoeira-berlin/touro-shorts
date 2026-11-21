@@ -55,8 +55,7 @@ KICK_FADE = 0.45          # s for a struck letter to fade out
 SHRINK_TO = 0.45          # scale of a shrunk card
 SHRINK_SNAP = 0.35        # s: the card snaps small with a springy overshoot, not a slow fade-down
 BEAT_POP = 0.12           # a beat (a kick or move) punches the card 12% bigger...
-BEAT_DUR = 0.3            # ...for this long, and draws a yellow underline under the key word
-UNDERLINE_SWEEP = 0.2     # s for a kick to draw the underline, in the card's direction
+BEAT_DUR = 0.3            # ...for this long. Nothing else: the type stays plain (no underlines)
 
 
 @dataclass
@@ -137,19 +136,6 @@ def marker_box(g, card, t):
     return [x0, g["key_base"] - 0.30 * size, x1, g["key_base"] + 0.06 * size]
 
 
-def underline_box(g, card, t):
-    """Thick yellow line under the key word, drawn by a kick: the first beat draws it and every
-    later beat draws it again, like signing the word. None before the first beat."""
-    last_beat = max((b for b in card.get("beats", []) if b <= t), default=None)
-    if last_beat is None:
-        return None
-    size = g["key_font"].size
-    left, right = g["key_x"] - 10, g["key_x"] + g["key_w"] + 10
-    span = (right - left) * ease_out_cubic(clamp01((t - last_beat) / UNDERLINE_SWEEP))
-    x0, x1 = (left, left + span) if g["side"] > 0 else (right - span, right)
-    return [x0, g["key_base"] + 0.13 * size, x1, g["key_base"] + 0.21 * size]
-
-
 def kick(glyphs, card, t):
     """Knock glyphs away as a leg sweeps across the frame in direction card['kick'] starting at `out`.
 
@@ -170,7 +156,7 @@ def kick(glyphs, card, t):
 
 
 def paint(layer, glyphs, boxes, box_alpha):
-    """Draw the yellow boxes (marker, underline) under the glyphs."""
+    """Draw the yellow highlight box(es) under the glyphs."""
     draw = ImageDraw.Draw(layer)
     for box in boxes:
         if box_alpha > 0:
@@ -195,7 +181,7 @@ def overlay_card(frame, g, card, t):
     if not card["in"] <= t <= card["out"] + leave:
         return frame
     glyphs = entering_glyphs(g, card, t)
-    boxes = [box for box in (marker_box(g, card, t), underline_box(g, card, t)) if box]
+    boxes = [box for box in [marker_box(g, card, t)] if box]
     hold = clamp01((min(t, card["out"]) - card["hit"]) / max(card["out"] - card["hit"], 1e-6))
     for gl in glyphs:
         gl.x += g["side"] * DRIFT * hold

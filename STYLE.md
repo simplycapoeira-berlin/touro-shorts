@@ -54,13 +54,13 @@ instead (step 4b) and is swapped directly for the next one.
    - **4b. Shrink to bridge a gap** (`shrink`, ~1.5 s after `hit`). The card **snaps** into its
      aligned top corner at 45% in 0.35 s, with a springy overshoot. It never fades down slowly:
      slow shrinking felt detached from the movement. The sentence stays on screen without
-     competing with the movement.
+     competing with the movement. It leaves before the next card, preferably knocked out by a
+     kick passing through its corner (`kick`); otherwise it slides out ending right as the next
+     card's `in` starts (`out` ≈ next `in` − 0.3 s).
    - **4c. Beats: the movement plays with the text** (`beats`, list of times). On every beat (a
-     kick or a big move, checked on frames), the card pops 12% for 0.3 s and the kick draws a
-     thick yellow **underline** below the highlight band, in the card's direction, like signing the
-     word. Every later beat draws it again. The highlight band itself only sweeps once, on `hit`. It leaves before the next
-     card, preferably knocked out by a kick passing through its corner (`kick`); otherwise it
-     slides out ending right as the next card's `in` starts (`out` ≈ next `in` − 0.3 s).
+     kick or a big move, checked on frames), the card pops 12% for 0.3 s. That's all: the type
+     stays plain, with only the one yellow highlight band from `hit`. **No underlines or other
+     extra decoration**; a kick-drawn underline was tried and rejected.
 5. **Leave** (`out`). Either a kick knocks the letters away (preferred when a kick passes through
    the band: impact = the frame the foot reaches the text), or the card slides out toward the
    open side with a two-ghost motion trail (0.3 s).
@@ -160,8 +160,7 @@ the same video. So each type below is a recipe with no free choices left except 
   - Each step opens with a card: kicker "STEP", key word = the step number (or the clip's
     `text`, whose last word becomes the key word).
   - The card lands 0.6 s into the step, while the fingers are up, so the number and the hand
-    say the same thing. On the move's peak the number pops and is underlined again (an
-    automatic beat). It leaves 0.35 s before the step ends.
+    say the same thing. On the move's peak the number pops (an automatic beat). It leaves 0.35 s before the step ends.
   - Cards alternate left/right. The card sits on the opposite side from the raised hand; check
     that it never covers the fingers.
 

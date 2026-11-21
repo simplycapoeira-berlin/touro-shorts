@@ -56,14 +56,13 @@ def test_shrink_snaps_instead_of_fading_down():
     assert cards.card_scale(card, 2.0 + cards.SHRINK_SNAP) == pytest.approx(cards.SHRINK_TO)
 
 
-def test_beat_pops_the_card_and_the_kick_draws_an_underline():
-    card = {"text": "It is about practice", "in": 0.0, "hit": 0.6, "beats": [3.0, 4.0], "out": 6.0}
+def test_beat_pops_the_card_and_adds_no_decoration():
+    card = {"text": "It is about practice", "in": 0.0, "hit": 0.6, "beats": [3.0], "out": 6.0}
     g = cards.compose(card, 1)
     assert cards.card_scale(card, 3.0 + cards.BEAT_DUR / 2) == pytest.approx(1 + cards.BEAT_POP)
     assert cards.card_scale(card, 3.0 + cards.BEAT_DUR + 0.01) == 1.0
-    assert cards.underline_box(g, card, 2.99) is None, "no underline before the first kick"
-    width = lambda t: cards.underline_box(g, card, t)[2] - cards.underline_box(g, card, t)[0]
-    assert width(3.0 + cards.UNDERLINE_SWEEP / 4) < 0.9 * width(3.5), "the kick draws it, it doesn't pop in"
-    assert width(4.0 + cards.UNDERLINE_SWEEP / 4) < 0.9 * width(3.5), "every kick draws it again"
-    under, marker = cards.underline_box(g, card, 3.5), cards.marker_box(g, card, 3.5)
-    assert under[1] > marker[3], "the underline sits below the highlight band"
+    # The type stays plain: after a kick, no yellow anywhere below the highlight band (no underline).
+    frame = cards.overlay_card(BLANK, g, card, 3.0 + cards.BEAT_DUR + 0.2)
+    below = frame.crop((0, int(cards.marker_box(g, card, 3.5)[3]) + 4, cards.W, cards.H))
+    yellow = sum(1 for r, gr, b, a in below.get_flattened_data() if a > 0 and r > 200 and gr > 180 and b < 100)
+    assert yellow == 0, "a kick must not draw an underline"

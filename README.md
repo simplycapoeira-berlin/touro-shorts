@@ -104,8 +104,7 @@ followed by its move:
   - `kick` (optional, `left`/`right`): at `out`, a kick knocks the letters away in that direction.
   - `shrink` (optional time): the card snaps small into its corner and stays until `out`,
     bridging a long gap to the next card.
-  - `beats` (optional list of times): kicks or big moves. Each one pops the card and underlines
-    the key word again.
+  - `beats` (optional list of times): kicks or big moves. Each one makes the card pop.
 - **`brightness`** (optional, −1..1): darkens or brightens the footage only, never the text.
 
 ## Versions
