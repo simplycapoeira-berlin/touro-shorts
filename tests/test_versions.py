@@ -1,7 +1,8 @@
 """Renders are versions: never overwritten, deleted only on request, nothing else touched."""
+
 import pytest
 
-import versions
+from touro_shorts import versions
 
 
 def test_versions_count_up_and_ignore_other_files(tmp_path):

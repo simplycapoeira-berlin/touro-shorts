@@ -1,7 +1,7 @@
 # Simplesmente Capoeira — Shorts style spec
 
 The rules every Instagram short follows. Exact values live once, as constants at the top of
-`shorts.py`. This file explains **why** they are what they are. To change the look, change a
+`src/touro_shorts/cards.py`. This file explains **why** they are what they are. To change the look, change a
 constant there and update the reason here.
 
 ## 1. Brand (from sc-capoeira.de)
@@ -65,7 +65,7 @@ instead (step 4b) and is swapped directly for the next one.
    the band: impact = the frame the foot reaches the text), or the card slides out toward the
    open side with a two-ghost motion trail (0.3 s).
 
-Timings: `python shorts.py peaks <clip>` prints the strongest movement moments (at least 1 s
+Timings: `uv run touro-shorts peaks <clip>` prints the strongest movement moments (at least 1 s
 apart). Then scrub frames to see **where** the body is. Peaks say when, not where. Put the first
 card in the first second, right after any opening move clears the band.
 
@@ -80,10 +80,10 @@ card in the first second, right after any opening move clears the band.
 ```bash
 uv sync                                    # once: creates .venv from pyproject.toml + uv.lock
 # raw clips go in in/ (or anywhere: "$SC_CONTENT/...", absolute paths stay local); renders go to out/
-uv run shorts.py peaks "in/<clip>.MOV"
+uv run touro-shorts peaks "in/<clip>.MOV"
 # write edits/<yymmdd>-<name>.json (copy one of the same type)
-uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/<name>-v<n>.mp4, a new version each time
-uv run shorts.py clean edits/<yymmdd>-<name>.json [n] # when the user is done: keep one version
+uv run touro-shorts render edits/<yymmdd>-<name>.json   # -> out/<name>-v<n>.mp4, a new version each time
+uv run touro-shorts clean edits/<yymmdd>-<name>.json [n] # when the user is done: keep one version
 uv run pytest
 ```
 

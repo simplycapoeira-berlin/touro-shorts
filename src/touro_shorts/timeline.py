@@ -5,6 +5,7 @@ environment variables and ~, and relative paths are taken from the repository ro
 point edits at their own input folders. Output metadata from the sources (iPhone GPS, device
 info) is always dropped.
 """
+
 import os
 import subprocess
 import sys
@@ -13,32 +14,37 @@ from pathlib import Path
 W, H, FPS = 1080, 1920, 30
 
 
-def source(root, src):
-    return root / Path(os.path.expanduser(os.path.expandvars(src)))
+def source(src):
+    """A clip or output path: env vars and ~ expanded; relative paths are relative to the working
+    directory (run commands from the repository root)."""
+    return Path(os.path.expanduser(os.path.expandvars(src)))
 
 
 def duration(path):
-    out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
-                          str(path)], capture_output=True, text=True).stdout
+    out = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
+        capture_output=True,
+        text=True,
+    ).stdout
     return float(out)
 
 
-def segments(clips, root):
+def segments(clips):
     """[(start, end)] of every clip on the output timeline, in seconds."""
     t, spans = 0.0, []
     for clip in clips:
-        end = clip.get("end") or duration(source(root, clip["src"]))
+        end = clip.get("end") or duration(source(clip["src"]))
         length = (end - clip.get("start", 0)) / clip.get("speed", 1)
         spans.append((t, t + length))
         t += length
     return spans
 
 
-def assemble(clips, brightness, root, dst):
+def assemble(clips, brightness, dst):
     """Write the joined timeline to dst. Portrait/rotation is handled by ffmpeg's autorotate."""
     args, graph = ["ffmpeg", "-v", "error", "-y"], []
     for i, clip in enumerate(clips):
-        src = source(root, clip["src"])
+        src = source(clip["src"])
         if not src.is_file():
             sys.exit(f"clip not found: {src} (relative to the repo, or is $SC_CONTENT set?)")
         args += ["-i", str(src)]
@@ -49,11 +55,31 @@ def assemble(clips, brightness, root, dst):
             f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1,"
             f"eq=brightness={brightness}[v{i}];"
             f"[{i}:a:0]atrim={cut},asetpts=PTS-STARTPTS,atempo={speed},"
-            f"aformat=sample_rates=48000:channel_layouts=stereo[a{i}];")
+            f"aformat=sample_rates=48000:channel_layouts=stereo[a{i}];"
+        )
     pairs = "".join(f"[v{i}][a{i}]" for i in range(len(clips)))
-    args += ["-filter_complex", "".join(graph) + f"{pairs}concat=n={len(clips)}:v=1:a=1[v][a]",
-             "-map", "[v]", "-map", "[a]", "-map_metadata", "-1",
-             "-c:v", "libx264", "-crf", "12", "-preset", "veryfast", "-pix_fmt", "yuv420p",
-             "-c:a", "aac", "-b:a", "192k", str(dst)]
+    args += [
+        "-filter_complex",
+        "".join(graph) + f"{pairs}concat=n={len(clips)}:v=1:a=1[v][a]",
+        "-map",
+        "[v]",
+        "-map",
+        "[a]",
+        "-map_metadata",
+        "-1",
+        "-c:v",
+        "libx264",
+        "-crf",
+        "12",
+        "-preset",
+        "veryfast",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
+        str(dst),
+    ]
     if subprocess.run(args).returncode != 0:
         sys.exit("ffmpeg timeline assembly failed")

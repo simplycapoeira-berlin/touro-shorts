@@ -1,21 +1,33 @@
 [project]
-name = "insta-shorts"
+name = "touro-shorts"
 version = "0.1.0"
-description = "Brand-styled, movement-timed text cards for Simplesmente Capoeira Instagram shorts"
+description = "AI editing assistant for capoeira video editors: brand-styled, movement-timed Instagram shorts"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "numpy>=2.5",
     "pillow>=13.0",
 ]
 
-[tool.uv]
-package = false  # a script project: run with `uv run shorts.py ...`, nothing to build or install
+[project.scripts]
+touro-shorts = "touro_shorts.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
     "pytest>=9.2.0",
+    "ruff>=0.14",
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]  # pycodestyle, pyflakes, import order, bugbear, modern syntax

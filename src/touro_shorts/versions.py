@@ -4,6 +4,7 @@ An edit's "output": "out/<name>.mp4" is stored as out/<name>-v1.mp4, -v2.mp4, ..
 compare iterations and go back. Versions are deleted only when a user asks (`prune`), after
 they have picked the one to keep. Only files matching <name>-v<n>.mp4 are ever touched.
 """
+
 import re
 from pathlib import Path
 
@@ -12,8 +13,11 @@ def all_versions(output):
     """Existing versions of an output, oldest first."""
     output = Path(output)
     pattern = re.compile(rf"^{re.escape(output.stem)}-v(\d+){re.escape(output.suffix)}$")
-    found = [(int(m.group(1)), p) for p in output.parent.glob(f"{output.stem}-v*{output.suffix}")
-             if (m := pattern.match(p.name))]
+    found = [
+        (int(m.group(1)), p)
+        for p in output.parent.glob(f"{output.stem}-v*{output.suffix}")
+        if (m := pattern.match(p.name))
+    ]
     return [p for _, p in sorted(found)]
 
 

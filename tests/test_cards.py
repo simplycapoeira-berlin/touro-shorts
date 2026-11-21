@@ -1,17 +1,19 @@
 """Card drawing obeys the motion grammar (STYLE.md §3) for every committed edit."""
+
 import json
 from pathlib import Path
 
 import pytest
 from PIL import Image
 
-import cards
-import models
+from touro_shorts import cards, models
 
 BLANK = Image.new("RGBA", (cards.W, cards.H))
-CASES = [(path.name, index, card)
-         for path in sorted(Path(models.ROOT, "edits").glob("*.json"))
-         for index, card in enumerate(models.edit_cards(json.loads(path.read_text())))]
+CASES = [
+    (path.name, index, card)
+    for path in sorted((Path(__file__).parents[1] / "edits").glob("*.json"))
+    for index, card in enumerate(models.edit_cards(json.loads(path.read_text())))
+]
 
 
 def ink_at(card, index, t):

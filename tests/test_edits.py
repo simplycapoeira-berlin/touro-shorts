@@ -1,12 +1,13 @@
 """Every committed edit must pass the rules and must be safe to publish."""
+
 import json
 from pathlib import Path
 
 import pytest
 
-import models
+from touro_shorts import models
 
-EDITS = sorted(Path(models.ROOT, "edits").glob("*.json"))
+EDITS = sorted((Path(__file__).parents[1] / "edits").glob("*.json"))
 
 
 @pytest.mark.parametrize("path", EDITS, ids=[p.name for p in EDITS])
