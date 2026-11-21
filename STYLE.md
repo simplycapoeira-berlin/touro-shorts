@@ -78,7 +78,7 @@ uv sync                                    # once: creates .venv from pyproject.
 uv run shorts.py peaks "in/<clip>.MOV"
 # write edits/<yymmdd>-<name>.json (copy one of the same type)
 uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/
-uv run test_shorts.py
+uv run pytest
 ```
 
 `in/` and `out/` are never committed: footage and renders belong to the users who provide them.
@@ -92,20 +92,12 @@ to fill the frame, and 60 fps sources give smooth 0.5× slow motion. Source meta
 is always stripped. The output carries `genre=<type>` and a JSON `comment` (type, edit, clips,
 texts) instead.
 
-## 6. Iteration log
+## 6. Decisions
 
-Record every round of feedback here: what was asked, and the decision it led to. Newest first.
-
-| Version | Feedback | Decision |
-|---|---|---|
-| v8 (2026-11-21) | Touro should also be seen showing the steps with his fingers. | Each educational step now starts with its finger count, cut from the clip's standing intro (`intro`, ~0.9 s): thumb = 1 … five fingers = 5. The STEP number lands on it (0.6 s into the step). Move cuts were tightened to peak −1.4 s / +1.7 s to keep the video under 20 s (19.7 s). |
-| v7 (2026-11-21) | New raw clips in `in/`. Two edits: one like before (an attention-heavy movement first, then the sequence with our type, same text for now), and one educational step-by-step video with cuts. Classify the target videos as models (types) and keep them as output metadata. Later, users only bring videos and text and everything runs reliably and repeatably. | Two video types (§8): `sequence` and `educational`. New `clips` timeline (cut, slow motion, join, rotate/scale any source) replaces the single `input`. `in/` and `out/` are git-ignored. 261120-sequence: 0.5× hook of IMG_7011's armada and high kick, then the sequence; "talent" lands during the hook and is kicked out by the armada at 12.95 s; "practice" is kicked out by the aú at 16.1 s; the calm ginga tail is trimmed (17.8 s total). 261120-steps: IMG_7013–7017 cut to their move (peak −1.7 s / +1.9 s), with automatic STEP 1–5 cards (18 s). Confirmed: plain step numbers are the default; names only when the user gives them. Outputs carry the type in their metadata, and GPS is stripped. |
-| v6 (2026-11-20) | The video is great; make it look a little darker. | New edit-level `brightness` (ffmpeg eq), applied to the footage before the text is drawn. Touro edit: −0.05 (mean brightness 158.6 → 143.1). Text and timings unchanged. |
-| v5 (2026-11-20) | v4 is good. After second 15, the kick should throw the first sentence out; everything else stays the same. | The shrunken "talent" now gets `"kick": "left"` with its impact at 15.9 s, the frame the foot sweeps right to left through the top-left corner. "practice" is unchanged (17.6 s, armada at 19.6 s). Both sentences now leave by a kick. |
-| v4 (2026-11-20) | Good design overall, but the first sentence disappears and the gap to the second is too long. Keep the first sentence's start as it is; after 5 s it should shrink until the second sentence replaces it. | New optional `shrink` time: the card scales into its top corner (to 45%, ease-out) and stays until it's swapped. Touro edit: "talent" from 0.6 s, shrinking from 5.0 s, out at 17.3 s, ending as "practice" enters at 17.6 s. The kick exit is unchanged. |
-| v3 (2026-11-18) | Shorten text durations. The audience has short attention, so give the information faster. Sizes are good. No blue. Text must not block the movement, but the movement may remove the text (e.g. the last armada). | Enter/land timings roughly halved (readable ~0.6 s after `in`). Cards stay ~2 s. Kicker now ink. Cards appear only when the body is clear of the text band. New `kick` exit: the final armada knocks "practice" off screen. Touro edit: card 1 at 0.6–3.4 s (after the opening jump kick), card 2 at 17.6 s, kicked at 19.6 s. Confirmed: a payoff kick-off beats delivering card 2 earlier, even with a ~14 s text-free middle. |
-| v2 | Bring the texts closer to the beginning. Make alignment and animations more artistic. | Two-level editorial card (small tracked kicker + poster-size key word). Left/right call-and-response alignment. Meia-lua arc letter swing, marker sweep, motion-trail exit. First card in the first second. |
-| v1 | Initial brief: 12–20 s capoeira shorts, website fonts/style, text during movement passes. | Archivo + site colors. Word-by-word rise, yellow marker on the key word timed to motion peaks. |
+Every round of feedback becomes one file in [`decisions/`](decisions/): what was asked, by whom,
+and the decision it led to. One file per decision means collaborators never conflict over a
+shared table. The sections above always hold the *current* rules; the decision files hold the
+history and the reasons. See [decisions/README.md](decisions/README.md) for the template.
 
 ## 7. References consulted
 

@@ -56,7 +56,7 @@ Every edit declares a `type`, the model of the output. It's stored in the output
 uv run shorts.py peaks in/<clip>.MOV            # when the strongest moves happen
 cp edits/261120-sequence.json edits/<yymmdd>-<name>.json   # copy an edit of the same type
 uv run shorts.py render edits/<yymmdd>-<name>.json         # -> out/<name>.mp4
-uv run test_shorts.py                           # checks every edit against STYLE.md
+uv run pytest                                   # checks every edit, rule and the pipeline
 ```
 
 A sequence edit:
@@ -119,12 +119,36 @@ and the edit file. Point it at a folder inside Google Drive for desktop and Driv
 - The folder must already exist, so a mistyped path fails instead of silently writing locally.
 - Nothing in `in/` is deleted. Once the archive has synced, clearing `in/` is up to you.
 
-## Working with Claude Code
+## Working together (through Claude)
 
-This repo has project skills in `.claude/skills/`:
+Several people change this repo through Claude, each on their own part. Changes meet on GitHub:
 
-- `capoeira-shorts`: the end-to-end workflow and design taste for a new edit.
-- `coding-principles`: how code in this repo is written (simple, deep modules, verified).
+1. **Branch and pull request.** Start a branch, let Claude make the change, open a pull request.
+   Nobody pushes to `main` directly.
+2. **Tests guard everyone's work.** GitHub Actions runs `uv run pytest` on every push. The tests
+   need no footage:
+   - every committed edit is validated;
+   - every rule in `models.py` has a test that breaks it on purpose;
+   - text drawing follows the motion grammar;
+   - the archive never overwrites or deletes;
+   - a synthetic clip is rendered end to end (format, metadata, GPS stripped, byte-identical
+     re-renders).
+3. **Edits are validated before rendering.** `models.load` lists every broken rule at once, so a
+   typo like `"kik"` fails with a clear message instead of a wrong video.
+4. **Decisions accumulate.** Each design change adds one file in [decisions/](decisions/)
+   (feedback → decision, who asked). [STYLE.md](STYLE.md) always shows the current rules.
+
+| Area | File |
+|---|---|
+| Text look and motion | `cards.py` |
+| Video types, edit fields, rules | `models.py` |
+| Cutting, slow motion, joining | `timeline.py` |
+| Cold storage | `archive.py` |
+| Commands | `shorts.py` |
+
+Claude reads [CLAUDE.md](CLAUDE.md) and the project skills in `.claude/skills/`:
+`capoeira-shorts` (making an edit) and `coding-principles` (changing the code, and where each
+kind of change goes).
 
 ## Fonts
 
