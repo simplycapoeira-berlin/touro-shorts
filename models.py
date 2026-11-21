@@ -27,7 +27,7 @@ MODELS = {
                 "spectacular move; hand-timed cards ride and get kicked by the movement",
     "educational": "opened by the most impressive move at real speed, then step by step: per "
                    "technique the finger count, then the move; an automatic numbered step card "
-                   "lands on the fingers and the move underlines it",
+                   "lands on the fingers and pops on the move",
 }
 STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
 PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's peak (STYLE.md §8)
@@ -57,7 +57,7 @@ def play_clips(edit):
 def edit_cards(edit):
     """The edit's text cards: explicit "cards", or for educational edits one step card per step
     (a step = its intro + its move), opened by a hook card ("In <n> steps", or the hook clip's
-    "text"). A move's peak is its step card's beat, so the move itself underlines the number."""
+    "text"). A move's peak is its step card's beat, so the number pops on the move."""
     if "cards" in edit:
         return edit["cards"]
     if edit["type"] != "educational":

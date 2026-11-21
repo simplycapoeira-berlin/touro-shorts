@@ -40,7 +40,7 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
 | **Edit** | One video, described as data: type, clips, text cards, grade. Validated before anything runs. | `edits/*.json`, `models.py` |
 | **Clip / hook / intro** | Cuts from raw footage. The first clip of a multi-clip video is the hook. An intro is a step's finger count. | `timeline.py` |
 | **Card** | A sentence on screen: a small kicker and a huge key word with the yellow marker. | `cards.py` |
-| **Beat / kick** | A real movement moment. A beat pops the card and draws the yellow underline; a kick knocks the text away. | `cards.py` |
+| **Beat / kick** | A real movement moment. A beat makes the card pop; a kick knocks the text away. | `cards.py` |
 | **Style spec** | The current brand and motion rules, derived from the website and user feedback. | STYLE.md |
 | **Decision** | One file per design choice: what was asked, by whom, what was decided. | `decisions/` |
 | **Version** | Every render is a new file; identical renders aren't duplicated. | `versions.py` |
@@ -69,7 +69,7 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
 | Feature | Status |
 |---|---|
 | Brand text cards (kicker + key word, marker, arc swing) | built |
-| Motion grammar: snap shrink, beats (pop + kick underline), kick exits | built |
+| Motion grammar: snap shrink, beats (pop), kick exits | built |
 | Video types `sequence` and `educational`, recorded in output metadata | built |
 | Cutting, joining, slow-motion hooks, grading, any iPhone source | built |
 | Educational steps: finger count + move, automatic numbered cards | built |
