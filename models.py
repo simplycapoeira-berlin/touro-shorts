@@ -31,6 +31,7 @@ MODELS = {
 }
 STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
 PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's peak (STYLE.md §8)
+HOOK_HIT, HOOK_GAP = 0.5, 0.3  # educational hook card: lands by 0.5 s, gone as the hook ends
 
 EDIT_KEYS = {"type", "clips", "output", "brightness", "cards"}
 CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text", "hook"}
@@ -55,16 +56,18 @@ def play_clips(edit):
 
 def edit_cards(edit):
     """The edit's text cards: explicit "cards", or for educational edits one step card per step
-    (a step = its intro + its move; the hook has no card). The move's peak is the card's beat, so
-    the move itself underlines the step number."""
+    (a step = its intro + its move), opened by a hook card ("In <n> steps", or the hook clip's
+    "text"). A move's peak is its step card's beat, so the move itself underlines the number."""
     if "cards" in edit:
         return edit["cards"]
     if edit["type"] != "educational":
         return []
     spans = iter(timeline.segments(play_clips(edit), ROOT))
-    if has_hook(edit):
-        next(spans)
     steps = []
+    if has_hook(edit):  # text from the very first frame: muted scrollers decide in ~1-3 s
+        hook, (_, hook_end) = edit["clips"][0], next(spans)
+        steps.append({"text": hook.get("text", f"In {len(edit['clips']) - 1} steps"),
+                      "in": 0.0, "hit": HOOK_HIT, "out": hook_end - HOOK_GAP})
     for n, clip in enumerate(edit["clips"][has_hook(edit):], 1):
         start, end = next(spans)
         move_start = start

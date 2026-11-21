@@ -62,7 +62,7 @@ if something isn't covered, ask, then record the answer in STYLE.md.
      only when the user names the step. Check that the count matches the step number.
 4. **Check the edit:** run `uv run pytest` (it validates every edit with `models.load` rules).
 5. **Render:** run `uv run shorts.py render edits/<file>.json`. Every render is a new version
-   (`out/<name>.v<n>.mp4`). The command prints which one, or "unchanged" if nothing changed.
+   (`out/<name>-v<n>.mp4`). The command prints which one, or "unchanged" if nothing changed.
 6. **Look at it.** Extract frames at `in`, `hit`, mid-hold and the exit / kick impact (cropped
    to the top 1100 px and stacked with `hstack`). Check:
    - no letter collisions;

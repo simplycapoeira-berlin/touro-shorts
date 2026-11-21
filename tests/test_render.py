@@ -57,9 +57,9 @@ def test_metadata_carries_type_and_drops_source_tags(rendered):
 
 def test_renders_are_versions_and_identical_renders_are_not_duplicated(rendered):
     first, second = rendered
-    assert first.name == "out.v1.mp4", "a render is a new version, never the bare output name"
+    assert first.name == "out-v1.mp4", "a render is a new version, never the bare output name"
     assert second == first, "the same edit renders byte-identical, so no duplicate version is stored"
-    assert sorted(p.name for p in first.parent.glob("out*.mp4")) == ["out.v1.mp4"]
+    assert sorted(p.name for p in first.parent.glob("out*.mp4")) == ["out-v1.mp4"]
 
 
 def test_text_is_drawn(rendered):

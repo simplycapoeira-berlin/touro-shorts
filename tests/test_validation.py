@@ -62,9 +62,9 @@ def test_educational_cards_are_generated_per_step():
         {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 6.0},
         {"src": "in/b.mov", "start": 2.0, "end": 5.0, "text": "Step 2 aú"}]}
     steps = models.edit_cards(edit)
-    assert [s["text"] for s in steps] == ["Step 1", "Step 2 aú"]
-    assert steps[0]["in"] == pytest.approx(0.5 + models.STEP_IN)  # after the 0.5 s hook
-    assert steps[1]["in"] == pytest.approx(0.5 + 0.8 + 3.0 + models.STEP_IN)  # after step 1's intro + move
+    assert [s["text"] for s in steps] == ["In 2 steps", "Step 1", "Step 2 aú"]
+    assert steps[1]["in"] == pytest.approx(0.5 + models.STEP_IN)  # after the 0.5 s hook
+    assert steps[2]["in"] == pytest.approx(0.5 + 0.8 + 3.0 + models.STEP_IN)  # after step 1's intro + move
     assert models.problems(edit) == []
 
 
@@ -76,11 +76,12 @@ def test_load_lists_every_problem_and_exits(tmp_path):
     assert "rule(s)" in str(stop.value) and '"type"' in str(stop.value) and "unknown edit keys" in str(stop.value)
 
 
-def test_educational_hook_gets_no_card_and_steps_get_their_peak_as_beat():
+def test_educational_hook_gets_a_first_frame_card_and_steps_get_their_peak_as_beat():
     edit = {"type": "educational", "output": "out/s.mp4", "clips": [
         {"src": "in/a.mov", "start": 4.0, "end": 6.0, "hook": True},
         {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 5.8}]}
-    (step,) = models.edit_cards(edit)
+    hook_card, step = models.edit_cards(edit)
+    assert hook_card["text"] == "In 1 steps" and hook_card["in"] == 0.0, "text from the first frame"
     assert step["text"] == "Step 1" and step["in"] == pytest.approx(2.0 + models.STEP_IN)
     assert step["beats"] == [pytest.approx(2.0 + 0.8 + models.PEAK_LEAD)]  # hook + intro + lead to the peak
     assert models.problems(edit) == []

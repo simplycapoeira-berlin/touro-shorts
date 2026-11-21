@@ -37,7 +37,7 @@ working:
   decision, and an example edit that passes the tests. Never a one-off edit.
 - **Never commit raw clips (`in/`), renders (`out/`) or machine-specific paths.** Clip paths in
   edit files are repo-relative (`in/...`) or use `$SC_CONTENT/...`. The tests reject absolute paths.
-- **Renders are versions** (`out/<name>.v<n>.mp4`), never overwritten. Show the user which
+- **Renders are versions** (`out/<name>-v<n>.mp4`), never overwritten. Show the user which
   version you made. Deleting versions (`shorts.py clean`), archiving (`shorts.py archive`) and
   deleting raw clips in `in/` only happen when a user asks, in that order. Never put their
   Drive path in a committed file.

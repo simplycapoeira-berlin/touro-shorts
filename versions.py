@@ -1,8 +1,8 @@
 """Output versions: every render becomes a new file, never an overwrite.
 
-An edit's "output": "out/<name>.mp4" is stored as out/<name>.v1.mp4, .v2.mp4, ... so users can
+An edit's "output": "out/<name>.mp4" is stored as out/<name>-v1.mp4, -v2.mp4, ... so users can
 compare iterations and go back. Versions are deleted only when a user asks (`prune`), after
-they have picked the one to keep. Only files matching <name>.v<n>.mp4 are ever touched.
+they have picked the one to keep. Only files matching <name>-v<n>.mp4 are ever touched.
 """
 import re
 from pathlib import Path
@@ -11,8 +11,8 @@ from pathlib import Path
 def all_versions(output):
     """Existing versions of an output, oldest first."""
     output = Path(output)
-    pattern = re.compile(rf"^{re.escape(output.stem)}\.v(\d+){re.escape(output.suffix)}$")
-    found = [(int(m.group(1)), p) for p in output.parent.glob(f"{output.stem}.v*{output.suffix}")
+    pattern = re.compile(rf"^{re.escape(output.stem)}-v(\d+){re.escape(output.suffix)}$")
+    found = [(int(m.group(1)), p) for p in output.parent.glob(f"{output.stem}-v*{output.suffix}")
              if (m := pattern.match(p.name))]
     return [p for _, p in sorted(found)]
 
@@ -23,13 +23,13 @@ def latest(output):
 
 
 def number(path):
-    return int(re.search(r"\.v(\d+)\.[^.]+$", Path(path).name).group(1))
+    return int(re.search(r"-v(\d+)\.[^.]+$", Path(path).name).group(1))
 
 
 def next_path(output):
     """Where the next render goes: one above the highest existing version."""
     output, last = Path(output), latest(output)
-    return output.with_name(f"{output.stem}.v{number(last) + 1 if last else 1}{output.suffix}")
+    return output.with_name(f"{output.stem}-v{number(last) + 1 if last else 1}{output.suffix}")
 
 
 def prune(output, keep=None):

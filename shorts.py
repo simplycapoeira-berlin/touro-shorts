@@ -9,7 +9,7 @@ Usage:
     uv run shorts.py archive <edit.json> <folder>  # cold-archive its inputs, kept render and edit
                                                    # into <folder>/<edit name>/ (e.g. Google Drive)
 
-Every render is a new version (out/<name>.v1.mp4, .v2.mp4, ...; see versions.py); a render
+Every render is a new version (out/<name>-v1.mp4, -v2.mp4, ...; see versions.py); a render
 identical to the latest version is not stored twice.
 
 An edit file (models.py) declares its video "type" (see models.MODELS), its "clips" (timeline.py), an "output"

@@ -24,8 +24,8 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
 2. **Say what you want.** For example: "a sequence with *it is not about talent / it is about
    practice*", or "an educational video of these five steps".
 3. **Get a version.** Claude classifies the clips into a video type, finds the moves, cuts,
-   times the text to the kicks, checks the frames, and renders `out/<edit>.v1.mp4`.
-4. **Give feedback, get the next version.** Each round adds a new version (`.v2`, `.v3`, …); nothing
+   times the text to the kicks, checks the frames, and renders `out/<edit>-v1.mp4`.
+4. **Give feedback, get the next version.** Each round adds a new version (`-v2`, `-v3`, …); nothing
    is overwritten. Each round's design choice is written down as a decision.
 5. **Finish.** When the user is happy, they tell Claude which version to keep. Claude deletes the
    other versions and, if asked, archives inputs + kept version + edit to cold storage (e.g.

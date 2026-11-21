@@ -110,7 +110,7 @@ followed by its move:
 
 ## Versions
 
-Every render is a new version: `out/<name>.v1.mp4`, `.v2.mp4`, … Nothing is overwritten, so
+Every render is a new version: `out/<name>-v1.mp4`, `-v2.mp4`, … Nothing is overwritten, so
 you can compare iterations. A render identical to the latest version isn't stored twice. When
 you're done:
 

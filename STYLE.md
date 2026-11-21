@@ -82,7 +82,7 @@ uv sync                                    # once: creates .venv from pyproject.
 # raw clips go in in/ (or anywhere: "$SC_CONTENT/...", absolute paths stay local); renders go to out/
 uv run shorts.py peaks "in/<clip>.MOV"
 # write edits/<yymmdd>-<name>.json (copy one of the same type)
-uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/<name>.v<n>.mp4, a new version each time
+uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/<name>-v<n>.mp4, a new version each time
 uv run shorts.py clean edits/<yymmdd>-<name>.json [n] # when the user is done: keep one version
 uv run pytest
 ```
@@ -144,8 +144,10 @@ the same video. So each type below is a recipe with no free choices left except 
 - **Input:** one clip per technique, filmed as "stand and **show the step number with the
   fingers**, show the move, return".
 - **Hook:** the video opens with the most impressive move of the material (usually the last
-  step's acrobatic move) at **real speed**, never slowed: ~0.9 s of just that moment, no card.
-  Then the steps.
+  step's acrobatic move) at **real speed**, never slowed. It starts mid-action, with the move's
+  peak at ~1 s, then ~1 s of landing so it can be followed (~2 s in total). A card is on screen
+  from the first frame: "In <n> steps" (or the hook clip's `text`). Then the steps. Source:
+  hook research, see decisions.
 - **Structure:** each step is two cuts from its clip, in recording order, with hard cuts
   everywhere. Total ≤ 20 s.
   - **Finger count** (`intro`, ~0.8–0.9 s): from the hand rising to just after the fingers are
