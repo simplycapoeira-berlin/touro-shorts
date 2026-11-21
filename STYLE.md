@@ -51,9 +51,13 @@ instead (step 4b) and is swapped directly for the next one.
    under the key word (0.15 s).
 4. **Hold briefly with a slow drift** (16 px). No looping motion, because loops pull the eye away
    from the athlete.
-   - **4b. Shrink to bridge a gap** (`shrink`, ~5 s for a full-size read). The card scales down
-     into its aligned top corner, toward 45%, with most of the shrink done in the first ~3 s. The
-     sentence stays on screen without competing with the movement. It leaves before the next
+   - **4b. Shrink to bridge a gap** (`shrink`, ~1.5 s after `hit`). The card **snaps** into its
+     aligned top corner at 45% in 0.35 s, with a springy overshoot. It never fades down slowly:
+     slow shrinking felt detached from the movement. The sentence stays on screen without
+     competing with the movement.
+   - **4c. Beats: the movement plays with the text** (`beats`, list of times). On every beat (a
+     kick or a big move, checked on frames), the card pops 12% for 0.3 s and the yellow marker
+     sweeps under the key word again, so the kick underlines the word. It leaves before the next
      card, preferably knocked out by a kick passing through its corner (`kick`); otherwise it
      slides out ending right as the next card's `in` starts (`out` ≈ next `in` − 0.3 s).
 5. **Leave** (`out`). Either a kick knocks the letters away (preferred when a kick passes through
@@ -127,28 +131,32 @@ the same video. So each type below is a recipe with no free choices left except 
     spectacular move. Cut calm tails.
   - Total 12–20 s.
 - **Text:** two cards (the sentence split in two, as in §4).
-  - Card 1 lands its key word on the hook's peak, shrinks from 5 s (§3, 4b), and is kicked out
-    by a real kick later in the sequence.
-  - Card 2 enters ~1 s after that and is kicked out by the last spectacular move.
+  - Card 1 lands its key word on the hook's peak, snaps small ~1.5 s later (§3, 4b), gets a beat
+    on the next kick, and is kicked out by the kick after that. Keep its total time short.
+  - Card 2 enters ~0.6 s after that, gets beats on the big moves while it holds, and is kicked
+    out by the last spectacular move.
   - Every kick time must be checked on frames. Motion peaks also fire on steps and turns.
 
 ### `educational`: step-by-step techniques
 
 - **Input:** one clip per technique, filmed as "stand and **show the step number with the
   fingers**, show the move, return".
+- **Hook:** the video opens like a sequence, with the most impressive move of the material
+  (usually the last step's acrobatic move) at 0.5× for ~1.6 s, with no card. Then the steps.
 - **Structure:** each step is two cuts from its clip, in recording order, with hard cuts
   everywhere. Total ≤ 20 s.
   - **Finger count** (`intro`, ~0.8–0.9 s): from the hand rising to just after the fingers are
     clearly shown. Confirm it on a zoomed 10 fps crop of the upper body. The count must match
     the step number.
-  - **Move:** from 1.4 s before the move's peak to 1.7 s after it (3.1 s): lead-in, move,
-    recovery.
+  - **Move:** from 1.4 s before the move's peak to 1.4 s after it (2.8 s): lead-in, move,
+    recovery. The fixed lead puts the peak at a known time, which is the step card's beat.
   - Everything else (standing, walking into position) is dropped. It's silent.
 - **Text:** generated, not hand-timed.
   - Each step opens with a card: kicker "STEP", key word = the step number (or the clip's
     `text`, whose last word becomes the key word).
   - The card lands 0.6 s into the step, while the fingers are up, so the number and the hand
-    say the same thing. It leaves 0.35 s before the step ends.
+    say the same thing. On the move's peak the number pops and is underlined again (an
+    automatic beat). It leaves 0.35 s before the step ends.
   - Cards alternate left/right. The card sits on the opposite side from the raised hand; check
     that it never covers the fingers.
 

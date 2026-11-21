@@ -38,6 +38,8 @@ def test_good_edit_passes():
     (lambda e: e["cards"][0].update(hit=2.0), "lands too late"),
     (lambda e: e["cards"][0].update(kick="up"), 'kick is "left" or "right"'),
     (lambda e: e["cards"][0].update(shrink=9.0), "shrink must fall between"),
+    (lambda e: e["cards"][0].update(beats=[3.0, 2.0]), "beats are move moments"),
+    (lambda e: e["cards"][0].update(beats=[0.2]), "beats are move moments"),
     (lambda e: e["cards"][0].update(text="Supercalifragilistic extraordinarily ridiculously long kicker words here"), "safe width"),
 ])
 def test_rule_is_enforced(change, expected):
@@ -54,12 +56,13 @@ def test_educational_steps_need_explicit_cuts_and_a_short_finger_count():
 
 def test_educational_cards_are_generated_per_step():
     edit = {"type": "educational", "output": "out/s.mp4", "clips": [
+        {"src": "in/a.mov", "start": 4.0, "end": 4.25, "speed": 0.5},
         {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 6.0},
         {"src": "in/b.mov", "start": 2.0, "end": 5.0, "text": "Step 2 aú"}]}
     steps = models.edit_cards(edit)
     assert [s["text"] for s in steps] == ["Step 1", "Step 2 aú"]
-    assert steps[0]["in"] == pytest.approx(models.STEP_IN)
-    assert steps[1]["in"] == pytest.approx(0.8 + 3.0 + models.STEP_IN)  # after step 1's intro + move
+    assert steps[0]["in"] == pytest.approx(0.5 + models.STEP_IN)  # after the 0.5 s hook
+    assert steps[1]["in"] == pytest.approx(0.5 + 0.8 + 3.0 + models.STEP_IN)  # after step 1's intro + move
     assert models.problems(edit) == []
 
 
@@ -69,3 +72,13 @@ def test_load_lists_every_problem_and_exits(tmp_path):
     with pytest.raises(SystemExit) as stop:
         models.load(path)
     assert "rule(s)" in str(stop.value) and '"type"' in str(stop.value) and "unknown edit keys" in str(stop.value)
+
+
+def test_educational_hook_gets_no_card_and_steps_get_their_peak_as_beat():
+    edit = {"type": "educational", "output": "out/s.mp4", "clips": [
+        {"src": "in/a.mov", "start": 4.0, "end": 5.0, "speed": 0.5},
+        {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 5.8}]}
+    (step,) = models.edit_cards(edit)
+    assert step["text"] == "Step 1" and step["in"] == pytest.approx(2.0 + models.STEP_IN)
+    assert step["beats"] == [pytest.approx(2.0 + 0.8 + models.PEAK_LEAD)]  # hook + intro + lead to the peak
+    assert models.problems(edit) == []

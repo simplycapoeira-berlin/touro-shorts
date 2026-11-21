@@ -7,7 +7,7 @@
   "output": "out/261120-sequence.mp4",
   "brightness": -0.05,
   "cards": [
-    {"text": "It is not about talent", "in": 0.9, "hit": 1.55, "shrink": 5.0, "out": 12.95, "kick": "left"},
-    {"text": "It is about practice", "in": 13.9, "hit": 14.55, "out": 16.1, "kick": "left"}
+    {"text": "It is not about talent", "in": 0.9, "hit": 1.55, "shrink": 3.0, "beats": [9.0], "out": 9.6, "kick": "left"},
+    {"text": "It is about practice", "in": 10.2, "hit": 10.85, "beats": [12.95, 13.6], "out": 16.1, "kick": "left"}
   ]
 }

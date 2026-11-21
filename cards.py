@@ -52,7 +52,10 @@ KICK_LIFT = 1100          # px/s upward at impact
 GRAVITY = 5000            # px/s^2
 KICK_SPIN = 520           # deg/s
 KICK_FADE = 0.45          # s for a struck letter to fade out
-SHRINK_TO = 0.45          # final scale of a shrinking card; mostly reached in its first ~3 s
+SHRINK_TO = 0.45          # scale of a shrunk card
+SHRINK_SNAP = 0.35        # s: the card snaps small with a springy overshoot, not a slow fade-down
+BEAT_POP = 0.12           # a beat (a kick or move) punches the card 12% bigger...
+BEAT_DUR = 0.3            # ...for this long, and re-sweeps the yellow marker under the key word
 
 
 @dataclass
@@ -122,8 +125,11 @@ def entering_glyphs(g, card, t):
 
 
 def marker_box(g, card, t):
-    """Yellow highlighter band over the lower part of the key word, like .sc-mark; None before it starts."""
-    sweep = clamp01((t - card["hit"] + MARK_SWEEP) / MARK_SWEEP)
+    """Yellow highlighter band over the lower part of the key word, like .sc-mark; None before it
+    starts. Each beat redraws it from scratch, so the move underlines the word again."""
+    last_beat = max((b for b in card.get("beats", []) if b <= t), default=None)
+    sweep = (clamp01((t - last_beat) / MARK_SWEEP) if last_beat is not None
+             else clamp01((t - card["hit"] + MARK_SWEEP) / MARK_SWEEP))
     if sweep <= 0:
         return None
     size = g["key_font"].size
@@ -187,9 +193,7 @@ def overlay_card(frame, g, card, t):
     if card.get("kick"):
         kick(glyphs, card, t)
     paint(layer, glyphs, marker, 1 - clamp01((t - card["out"]) / 0.1) if card.get("kick") else 1.0)
-    if "shrink" in card:
-        p = clamp01((min(t, card["out"]) - card["shrink"]) / (card["out"] - card["shrink"]))
-        layer = scaled(layer, 1 - (1 - SHRINK_TO) * ease_out_cubic(p), g["side"])
+    layer = scaled(layer, card_scale(card, min(t, card["out"])), g["side"])
     if card.get("kick"):
         return Image.alpha_composite(frame, layer)
 
@@ -201,9 +205,20 @@ def overlay_card(frame, g, card, t):
     return frame
 
 
+def card_scale(card, t):
+    """Scale of the whole card at t: a springy snap down at `shrink`, times a pop on every beat."""
+    s = 1.0
+    if "shrink" in card and t > card["shrink"]:  # before it, stay exactly 1: no resampling blur
+        s -= (1 - SHRINK_TO) * ease_out_back(clamp01((t - card["shrink"]) / SHRINK_SNAP))
+    for beat in card.get("beats", []):
+        if 0 <= t - beat <= BEAT_DUR:
+            s *= 1 + BEAT_POP * math.sin(math.pi * (t - beat) / BEAT_DUR)
+    return s
+
+
 def scaled(layer, s, side):
-    """Scale the card layer by s around its aligned top corner, so it shrinks into that corner."""
-    if s >= 1:
+    """Scale the card layer by s around its aligned top corner, so it shrinks into (or pops out of) that corner."""
+    if s == 1:
         return layer
     ax, ay = (MARGIN_X if side > 0 else W - MARGIN_X), TEXT_TOP
     return layer.transform(layer.size, Image.AFFINE, (1 / s, 0, ax - ax / s, 0, 1 / s, ay - ay / s),
