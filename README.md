@@ -24,9 +24,12 @@
 
 ---
 
-Animated, brand-styled text for [Simplesmente Capoeira](https://sc-capoeira.de/) Instagram
-shorts (12–20 s, 1080×1920). One Python file, one JSON file per edit. The design rules live in
-[STYLE.md](STYLE.md).
+An AI editing assistant for capoeira video editors: bring raw clips and a few words, talk to
+Claude, get brand-consistent [Simplesmente Capoeira](https://sc-capoeira.de/) Instagram shorts
+(12–20 s, 1080×1920) whose text moves with the capoeira.
+- What the product is and why: [PRODUCT.md](PRODUCT.md).
+- The visual rules: [STYLE.md](STYLE.md).
+- Every decision along the way: [decisions/](decisions/).
 
 ## Setup
 
@@ -91,7 +94,8 @@ followed by its move:
 }
 ```
 
-- **Clips:** `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
+- **Clips:** the first clip of a multi-clip edit is the hook (`"hook": true`): slow motion in
+  a sequence, real speed in an educational video. `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
   slow motion). `intro` [start, end] plays a second cut of the same source first (the finger
   count). Clips are joined in order with hard cuts.
 - **Cards:** the last word of each card is its key word, set huge with the yellow marker.
@@ -103,6 +107,17 @@ followed by its move:
   - `beats` (optional list of times): kicks or big moves. Each one pops the card and underlines
     the key word again.
 - **`brightness`** (optional, −1..1): darkens or brightens the footage only, never the text.
+
+## Versions
+
+Every render is a new version: `out/<name>-v1.mp4`, `-v2.mp4`, … Nothing is overwritten, so
+you can compare iterations. A render identical to the latest version isn't stored twice. When
+you're done:
+
+```bash
+uv run shorts.py clean edits/261120-steps.json      # keep the latest version, delete the others
+uv run shorts.py clean edits/261120-steps.json 2    # or keep version 2
+```
 
 ## Cold archive (e.g. Google Drive)
 
@@ -145,6 +160,7 @@ Several people change this repo through Claude, each on their own part. Changes 
 | Text look and motion | `cards.py` |
 | Video types, edit fields, rules | `models.py` |
 | Cutting, slow motion, joining | `timeline.py` |
+| Render versions | `versions.py` |
 | Cold storage | `archive.py` |
 | Commands | `shorts.py` |
 

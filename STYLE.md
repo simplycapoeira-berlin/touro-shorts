@@ -56,8 +56,9 @@ instead (step 4b) and is swapped directly for the next one.
      slow shrinking felt detached from the movement. The sentence stays on screen without
      competing with the movement.
    - **4c. Beats: the movement plays with the text** (`beats`, list of times). On every beat (a
-     kick or a big move, checked on frames), the card pops 12% for 0.3 s and the yellow marker
-     sweeps under the key word again, so the kick underlines the word. It leaves before the next
+     kick or a big move, checked on frames), the card pops 12% for 0.3 s and the kick draws a
+     thick yellow **underline** below the highlight band, in the card's direction, like signing the
+     word. Every later beat draws it again. The highlight band itself only sweeps once, on `hit`. It leaves before the next
      card, preferably knocked out by a kick passing through its corner (`kick`); otherwise it
      slides out ending right as the next card's `in` starts (`out` ≈ next `in` − 0.3 s).
 5. **Leave** (`out`). Either a kick knocks the letters away (preferred when a kick passes through
@@ -81,7 +82,8 @@ uv sync                                    # once: creates .venv from pyproject.
 # raw clips go in in/ (or anywhere: "$SC_CONTENT/...", absolute paths stay local); renders go to out/
 uv run shorts.py peaks "in/<clip>.MOV"
 # write edits/<yymmdd>-<name>.json (copy one of the same type)
-uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/
+uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/<name>-v<n>.mp4, a new version each time
+uv run shorts.py clean edits/<yymmdd>-<name>.json [n] # when the user is done: keep one version
 uv run pytest
 ```
 
@@ -141,8 +143,11 @@ the same video. So each type below is a recipe with no free choices left except 
 
 - **Input:** one clip per technique, filmed as "stand and **show the step number with the
   fingers**, show the move, return".
-- **Hook:** the video opens like a sequence, with the most impressive move of the material
-  (usually the last step's acrobatic move) at 0.5× for ~1.6 s, with no card. Then the steps.
+- **Hook:** the video opens with the most impressive move of the material (usually the last
+  step's acrobatic move) at **real speed**, never slowed. It starts mid-action, with the move's
+  peak at ~1 s, then ~1 s of landing so it can be followed (~2 s in total). A card is on screen
+  from the first frame: "In <n> steps" (or the hook clip's `text`). Then the steps. Source:
+  hook research, see decisions.
 - **Structure:** each step is two cuts from its clip, in recording order, with hard cuts
   everywhere. Total ≤ 20 s.
   - **Finger count** (`intro`, ~0.8–0.9 s): from the hand rising to just after the fingers are

@@ -56,11 +56,14 @@ def test_shrink_snaps_instead_of_fading_down():
     assert cards.card_scale(card, 2.0 + cards.SHRINK_SNAP) == pytest.approx(cards.SHRINK_TO)
 
 
-def test_beat_pops_the_card_and_redraws_the_underline():
-    card = {"text": "It is about practice", "in": 0.0, "hit": 0.6, "beats": [3.0], "out": 6.0}
+def test_beat_pops_the_card_and_the_kick_draws_an_underline():
+    card = {"text": "It is about practice", "in": 0.0, "hit": 0.6, "beats": [3.0, 4.0], "out": 6.0}
     g = cards.compose(card, 1)
     assert cards.card_scale(card, 3.0 + cards.BEAT_DUR / 2) == pytest.approx(1 + cards.BEAT_POP)
     assert cards.card_scale(card, 3.0 + cards.BEAT_DUR + 0.01) == 1.0
-    width = lambda t: cards.marker_box(g, card, t)[2] - cards.marker_box(g, card, t)[0]
-    assert width(3.0 + cards.MARK_SWEEP / 4) < 0.9 * width(2.9), "the move underlines the word again"
-    assert width(3.0 + cards.MARK_SWEEP) == pytest.approx(width(2.9))
+    assert cards.underline_box(g, card, 2.99) is None, "no underline before the first kick"
+    width = lambda t: cards.underline_box(g, card, t)[2] - cards.underline_box(g, card, t)[0]
+    assert width(3.0 + cards.UNDERLINE_SWEEP / 4) < 0.9 * width(3.5), "the kick draws it, it doesn't pop in"
+    assert width(4.0 + cards.UNDERLINE_SWEEP / 4) < 0.9 * width(3.5), "every kick draws it again"
+    under, marker = cards.underline_box(g, card, 3.5), cards.marker_box(g, card, 3.5)
+    assert under[1] > marker[3], "the underline sits below the highlight band"

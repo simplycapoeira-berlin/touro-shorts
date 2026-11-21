@@ -4,6 +4,7 @@ Video pipeline for Simplesmente Capoeira Instagram shorts. Several people change
 through Claude, each working on their own part, and everything meets on GitHub. Read before
 working:
 
+- [PRODUCT.md](PRODUCT.md): what this product is, who it is for, its principles and feature map.
 - [STYLE.md](STYLE.md): the current design rules. It is the source of truth for taste.
 - [decisions/](decisions/): why each rule exists. One file per decision.
 - `.claude/skills/capoeira-shorts`: how to make or revise an edit.
@@ -16,6 +17,7 @@ working:
 | Text animation | `cards.py` | the look or motion of text changes |
 | Video types and edit rules | `models.py` | a new type, a new edit field, or a new rule |
 | Cutting, joining, grading | `timeline.py` | how clips become one timeline |
+| Render versions | `versions.py` | how renders are numbered, kept or cleaned |
 | Cold storage | `archive.py` | how finished edits are stored |
 | Commands | `shorts.py` | a new command; it only wires the modules together |
 | Edits | `edits/*.json` | a new video (validated by `models.load`) |
@@ -35,7 +37,10 @@ working:
   decision, and an example edit that passes the tests. Never a one-off edit.
 - **Never commit raw clips (`in/`), renders (`out/`) or machine-specific paths.** Clip paths in
   edit files are repo-relative (`in/...`) or use `$SC_CONTENT/...`. The tests reject absolute paths.
-- **Cold archiving** (`shorts.py archive`) only runs when a user asks and gives the destination
-  folder. Never put their Drive path in a committed file.
+- **Renders are versions** (`out/<name>-v<n>.mp4`), never overwritten. Show the user which
+  version you made. Deleting versions (`shorts.py clean`), archiving (`shorts.py archive`) and
+  deleting raw clips in `in/` only happen when a user asks, in that order. Never put their
+  Drive path in a committed file.
+- **Product changes** (users, scope, principles, features) update PRODUCT.md and add a decision.
 - **Verify visually:** extract frames from the render with ffmpeg and look at them before
   claiming an edit is done. Tests prove the pipeline works; only frames prove the edit looks right.

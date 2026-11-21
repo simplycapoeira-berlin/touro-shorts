@@ -4,8 +4,13 @@ brand-styled, movement-timed text cards on top.
 Usage:
     uv run shorts.py peaks <clip>        # print motion peaks, to pick cuts and card timings
     uv run shorts.py render <edit.json>  # render the edit described in the JSON
-    uv run shorts.py archive <edit.json> <folder>  # cold-archive its inputs, render and edit
+    uv run shorts.py clean <edit.json> [version]   # keep one render version (default: latest),
+                                                   # delete the others; only when the user asks
+    uv run shorts.py archive <edit.json> <folder>  # cold-archive its inputs, kept render and edit
                                                    # into <folder>/<edit name>/ (e.g. Google Drive)
+
+Every render is a new version (out/<name>-v1.mp4, -v2.mp4, ...; see versions.py); a render
+identical to the latest version is not stored twice.
 
 An edit file (models.py) declares its video "type" (see models.MODELS), its "clips" (timeline.py), an "output"
 path, an optional "brightness", and its text cards. Educational edits may omit "cards": each
@@ -44,6 +49,7 @@ import archive
 import cards
 import models
 import timeline
+import versions
 
 ROOT = models.ROOT
 W, H = cards.W, cards.H
@@ -51,8 +57,9 @@ W, H = cards.W, cards.H
 
 def render(edit_path):
     edit = models.load(edit_path)
-    dst = timeline.source(ROOT, edit["output"])
-    dst.parent.mkdir(parents=True, exist_ok=True)
+    output = timeline.source(ROOT, edit["output"])
+    output.parent.mkdir(parents=True, exist_ok=True)
+    previous, dst = versions.latest(output), versions.next_path(output)
     cut = dst.with_suffix(".timeline.mp4")
     timeline.assemble(models.play_clips(edit), edit.get("brightness", 0), ROOT, cut)
     placed = [(cards.compose(c, i), c) for i, c in enumerate(models.edit_cards(edit))]
@@ -85,7 +92,12 @@ def render(edit_path):
     if encode.wait() != 0:
         sys.exit("ffmpeg encode failed")
     cut.unlink()
+    if previous and previous.read_bytes() == dst.read_bytes():
+        dst.unlink()  # deterministic: an unchanged edit would only duplicate the latest version
+        print(f"{previous}  (unchanged, no new version)")
+        return previous
     print(f"{dst}  ({index} frames, {edit['type']})")
+    return dst
 
 
 def peaks(clip, top=6):
@@ -105,6 +117,14 @@ def peaks(clip, top=6):
         print(f"{i / 30:5.2f}s  {'#' * int(energy[i] * 4)}")
 
 
+def clean(edit_path, keep=None):
+    """Keep one version of the edit's render (default: the latest) and delete the others."""
+    output = timeline.source(ROOT, models.load(edit_path)["output"])
+    before = versions.all_versions(output)
+    kept = versions.prune(output, keep)
+    print(f"kept {kept.name}; deleted {len(before) - 1} other version(s)")
+
+
 def archive_edit(edit_path, folder):
     """Archive a rendered edit to <folder>/<edit name>/: raw source clips in inputs/, plus the
     render and the edit file. The folder must already exist (e.g. a synced Google Drive folder),
@@ -113,9 +133,9 @@ def archive_edit(edit_path, folder):
     if not root.is_dir():
         sys.exit(f"archive folder not found: {root} (is Google Drive for desktop running?)")
     edit = models.load(edit_path)
-    render_path = timeline.source(ROOT, edit["output"])
-    if not render_path.is_file():
-        sys.exit(f"render {render_path} first: the archive keeps inputs and output together")
+    render_path = versions.latest(timeline.source(ROOT, edit["output"]))
+    if render_path is None:
+        sys.exit(f"render {edit['output']} first: the archive keeps inputs and output together")
     dest = root / Path(edit_path).stem
     clips = archive.archive([timeline.source(ROOT, c["src"]) for c in edit["clips"]], dest / "inputs")
     files = archive.archive([render_path, edit_path], dest)
@@ -123,8 +143,9 @@ def archive_edit(edit_path, folder):
 
 
 if __name__ == "__main__":
-    commands = {"render": (render, 1), "peaks": (peaks, 1), "archive": (archive_edit, 2)}
-    command, arity = commands.get(sys.argv[1] if len(sys.argv) > 1 else "", (None, 0))
-    if command is None or len(sys.argv) != 2 + arity:
+    commands = {"render": (render, 1, 1), "peaks": (peaks, 1, 1), "clean": (clean, 1, 2),
+                "archive": (archive_edit, 2, 2)}
+    command, least, most = commands.get(sys.argv[1] if len(sys.argv) > 1 else "", (None, 0, 0))
+    if command is None or not least <= len(sys.argv) - 2 <= most:
         sys.exit(__doc__)
     command(*sys.argv[2:])

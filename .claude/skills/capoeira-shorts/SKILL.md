@@ -27,7 +27,8 @@ full rules (§8 for the types). This skill is the working procedure.
   is worth a quiet stretch with no text.
 - No looping motion. Every motion either brings information in or takes it out, or answers
   a move (`beats`: the card pops and the kick underlines the key word again).
-- Every video opens with a slow-motion hook, educational ones included (no card on the hook).
+- Every multi-clip video opens with a hook (`"hook": true` on the first clip, no card): slow
+  motion in a sequence, Touro's real speed in an educational video.
 
 ## Procedure
 
@@ -60,16 +61,19 @@ if something isn't covered, ask, then record the answer in STYLE.md.
      to peak + 1.7 s. No cards (they're generated and land on the fingers). Add a clip `text`
      only when the user names the step. Check that the count matches the step number.
 4. **Check the edit:** run `uv run pytest` (it validates every edit with `models.load` rules).
-5. **Render:** run `uv run shorts.py render edits/<file>.json` (output in `out/`).
+5. **Render:** run `uv run shorts.py render edits/<file>.json`. Every render is a new version
+   (`out/<name>-v<n>.mp4`). The command prints which one, or "unchanged" if nothing changed.
 6. **Look at it.** Extract frames at `in`, `hit`, mid-hold and the exit / kick impact (cropped
    to the top 1100 px and stacked with `hstack`). Check:
    - no letter collisions;
    - text clear of the head and body at rest;
    - the kick impact lands on the foot (±2 frames).
    Fix the timing and render again before showing the user.
-7. **Send the render** to the user, with one line per change.
+7. **Send the render** to the user, naming its version, with one line per change.
 8. **On feedback:** change the constants in `cards.py` or the edit. Update STYLE.md's rules
    **and** add a decision file in `decisions/`. Make new rules checkable (`models.problems` or `tests/`).
-9. **Archive only when asked**, with the Drive folder the user gives:
+9. **Finish only when asked.** When the user is done: `uv run shorts.py clean edits/<file>.json
+   [version]` keeps the chosen version (default: the latest) and deletes the others. Then, if
+   asked, archive, with the Drive folder the user gives:
    `uv run shorts.py archive edits/<file>.json "<folder>"`. Report the archive folder it prints.
    Never delete anything from `in/` unless the user asks, and only after the archive succeeded.
