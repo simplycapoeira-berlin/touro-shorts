@@ -1,5 +1,4 @@
 """End to end on synthetic footage: no real clips needed, so this runs on every machine and in CI."""
-import hashlib
 import json
 import shutil
 import subprocess
@@ -35,14 +34,13 @@ def rendered(tmp_path_factory):
     }
     edit_path = tmp / "260101-synthetic.json"
     edit_path.write_text(json.dumps(edit))
-    shorts.render(edit_path)
-    first = (tmp / "out.mp4").read_bytes()
-    shorts.render(edit_path)
-    return tmp / "out.mp4", first
+    first = shorts.render(edit_path)
+    second = shorts.render(edit_path)
+    return first, second
 
 
 def test_output_format(rendered):
-    path, _ = rendered
+    path = rendered[0]
     info = probe(path)
     video = next(s for s in info["streams"] if s["codec_type"] == "video")
     assert (video["width"], video["height"], video["r_frame_rate"]) == (1080, 1920, "30/1")
@@ -57,13 +55,15 @@ def test_metadata_carries_type_and_drops_source_tags(rendered):
     assert "location" not in json.dumps(tags), "source metadata (GPS) must be stripped"
 
 
-def test_same_edit_renders_byte_identical(rendered):
-    path, first = rendered
-    assert hashlib.sha256(path.read_bytes()).digest() == hashlib.sha256(first).digest()
+def test_renders_are_versions_and_identical_renders_are_not_duplicated(rendered):
+    first, second = rendered
+    assert first.name == "out.v1.mp4", "a render is a new version, never the bare output name"
+    assert second == first, "the same edit renders byte-identical, so no duplicate version is stored"
+    assert sorted(p.name for p in first.parent.glob("out*.mp4")) == ["out.v1.mp4"]
 
 
 def test_text_is_drawn(rendered):
-    path, _ = rendered
+    path = rendered[0]
     def mean_dark_top(t):
         raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(t), "-i", str(path), "-frames:v", "1",
                               "-vf", "crop=1080:400:0:280,format=gray", "-f", "rawvideo", "-"],

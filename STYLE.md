@@ -81,7 +81,8 @@ uv sync                                    # once: creates .venv from pyproject.
 # raw clips go in in/ (or anywhere: "$SC_CONTENT/...", absolute paths stay local); renders go to out/
 uv run shorts.py peaks "in/<clip>.MOV"
 # write edits/<yymmdd>-<name>.json (copy one of the same type)
-uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/
+uv run shorts.py render edits/<yymmdd>-<name>.json   # -> out/<name>.v<n>.mp4, a new version each time
+uv run shorts.py clean edits/<yymmdd>-<name>.json [n] # when the user is done: keep one version
 uv run pytest
 ```
 
