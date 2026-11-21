@@ -56,8 +56,9 @@ instead (step 4b) and is swapped directly for the next one.
      slow shrinking felt detached from the movement. The sentence stays on screen without
      competing with the movement.
    - **4c. Beats: the movement plays with the text** (`beats`, list of times). On every beat (a
-     kick or a big move, checked on frames), the card pops 12% for 0.3 s and the yellow marker
-     sweeps under the key word again, so the kick underlines the word. It leaves before the next
+     kick or a big move, checked on frames), the card pops 12% for 0.3 s and the kick draws a
+     thick yellow **underline** below the highlight band, in the card's direction, like signing the
+     word. Every later beat draws it again. The highlight band itself only sweeps once, on `hit`. It leaves before the next
      card, preferably knocked out by a kick passing through its corner (`kick`); otherwise it
      slides out ending right as the next card's `in` starts (`out` ≈ next `in` − 0.3 s).
 5. **Leave** (`out`). Either a kick knocks the letters away (preferred when a kick passes through
@@ -142,8 +143,9 @@ the same video. So each type below is a recipe with no free choices left except 
 
 - **Input:** one clip per technique, filmed as "stand and **show the step number with the
   fingers**, show the move, return".
-- **Hook:** the video opens like a sequence, with the most impressive move of the material
-  (usually the last step's acrobatic move) at 0.5× for ~1.6 s, with no card. Then the steps.
+- **Hook:** the video opens with the most impressive move of the material (usually the last
+  step's acrobatic move) at **real speed**, never slowed: ~0.9 s of just that moment, no card.
+  Then the steps.
 - **Structure:** each step is two cuts from its clip, in recording order, with hard cuts
   everywhere. Total ≤ 20 s.
   - **Finger count** (`intro`, ~0.8–0.9 s): from the hand rising to just after the fingers are

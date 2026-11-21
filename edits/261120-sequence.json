@@ -1,7 +1,7 @@
 {
   "type": "sequence",
   "clips": [
-    {"src": "in/IMG_7011.MOV", "start": 11.6, "end": 12.7, "speed": 0.5},
+    {"src": "in/IMG_7011.MOV", "start": 11.6, "end": 12.7, "speed": 0.5, "hook": true},
     {"src": "in/IMG_7011.MOV", "start": 1.0, "end": 16.6}
   ],
   "output": "out/261120-sequence.mp4",
