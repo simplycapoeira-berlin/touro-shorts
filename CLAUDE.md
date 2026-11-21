@@ -12,6 +12,8 @@ Rules that always apply:
   the iteration log (feedback → decision, newest first). Keep `test_shorts.py` in sync with the rules.
 - Never commit raw clips (`in/`), renders (`out/`) or machine-specific paths. Clip paths in
   edit files are repo-relative (`in/...`) or use `$SC_CONTENT/...`.
+- Cold archiving (`shorts.py archive`) only runs when a user asks and gives the destination
+  folder. Never put their Drive path in a committed file.
 - Every edit declares a video `type` from `MODELS` in `shorts.py`, recipe in STYLE.md §8.
   A new kind of video gets a new type (code + §8 + iteration log), never a one-off edit.
 - Verify visually: extract frames from the render with ffmpeg and look at them before

@@ -43,4 +43,23 @@ for edit_path in Path(shorts.ROOT, "edits").glob("*.json"):
         assert box[1] >= shorts.TEXT_TOP - 10, f"text above the safe zone: {card}"
         assert ink_at(card["out"] + 1.0) is None, "card still visible 1 s after out"
 
+# Cold archive: verified copy, idempotent re-run, never overwrites a different file.
+import tempfile
+import archive
+
+with tempfile.TemporaryDirectory() as tmp:
+    src, dest = Path(tmp, "src"), Path(tmp, "drive", "edit")
+    src.mkdir()
+    (src / "clip.mov").write_bytes(b"raw footage")
+    first = archive.archive([src / "clip.mov", src / "clip.mov"], dest)
+    assert list(first) == ["clip.mov"] and (dest / "clip.mov").read_bytes() == b"raw footage"
+    assert archive.archive([src / "clip.mov"], dest) == first, "re-archiving must be a no-op"
+    (src / "clip.mov").write_bytes(b"other footage")
+    try:
+        archive.archive([src / "clip.mov"], dest)
+        raise AssertionError("a different file must not overwrite an archived one")
+    except SystemExit:
+        assert (dest / "clip.mov").read_bytes() == b"raw footage"
+    assert (src / "clip.mov").exists(), "archiving never deletes the source"
+
 print("ok")

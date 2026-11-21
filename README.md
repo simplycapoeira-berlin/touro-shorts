@@ -102,6 +102,23 @@ followed by its move:
     long gap to the next card.
 - **`brightness`** (optional, −1..1): darkens or brightens the footage only, never the text.
 
+## Cold archive (e.g. Google Drive)
+
+Once an edit is finished, store its raw inputs, the render and the edit file away from the laptop:
+
+```bash
+uv run shorts.py archive edits/261120-steps.json "<your Google Drive folder>"
+```
+
+This creates `<folder>/261120-steps/` with `inputs/` (the original clips, unchanged), the render
+and the edit file. Point it at a folder inside Google Drive for desktop and Drive uploads it.
+
+- Every copy is checked with sha256 and listed in a `manifest.json`.
+- Re-running it is safe: identical files are skipped, and a different file with the same name
+  stops the run instead of being overwritten.
+- The folder must already exist, so a mistyped path fails instead of silently writing locally.
+- Nothing in `in/` is deleted. Once the archive has synced, clearing `in/` is up to you.
+
 ## Working with Claude Code
 
 This repo has project skills in `.claude/skills/`:

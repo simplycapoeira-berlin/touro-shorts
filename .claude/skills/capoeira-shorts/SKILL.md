@@ -68,3 +68,6 @@ if something isn't covered, ask, then record the answer in STYLE.md.
 7. **Send the render** to the user, with one line per change.
 8. **On feedback:** change the constants in `shorts.py` or the edit. Update STYLE.md's rules
    **and** add a row to its iteration log. Update `test_shorts.py` if a rule became checkable.
+9. **Archive only when asked**, with the Drive folder the user gives:
+   `uv run shorts.py archive edits/<file>.json "<folder>"`. Report the archive folder it prints.
+   Never delete anything from `in/` unless the user asks, and only after the archive succeeded.

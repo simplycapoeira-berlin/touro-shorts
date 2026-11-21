@@ -4,6 +4,8 @@ brand-styled, movement-timed text cards on top.
 Usage:
     uv run shorts.py peaks <clip>        # print motion peaks, to pick cuts and card timings
     uv run shorts.py render <edit.json>  # render the edit described in the JSON
+    uv run shorts.py archive <edit.json> <folder>  # cold-archive its inputs, render and edit
+                                                   # into <folder>/<edit name>/ (e.g. Google Drive)
 
 An edit file declares its video "type" (see MODELS), its "clips" (timeline.py), an "output"
 path, an optional "brightness", and its text cards. Educational edits may omit "cards": each
@@ -38,6 +40,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+import archive
 import timeline
 
 ROOT = Path(__file__).parent
@@ -344,8 +347,26 @@ def peaks(clip, top=6):
         print(f"{i / 30:5.2f}s  {'#' * int(energy[i] * 4)}")
 
 
+def archive_edit(edit_path, folder):
+    """Archive a rendered edit to <folder>/<edit name>/: raw source clips in inputs/, plus the
+    render and the edit file. The folder must already exist (e.g. a synced Google Drive folder),
+    so a mistyped path fails instead of silently creating a local copy."""
+    root = timeline.source(ROOT, folder)
+    if not root.is_dir():
+        sys.exit(f"archive folder not found: {root} (is Google Drive for desktop running?)")
+    edit = json.loads(Path(edit_path).read_text())
+    render_path = timeline.source(ROOT, edit["output"])
+    if not render_path.is_file():
+        sys.exit(f"render {render_path} first: the archive keeps inputs and output together")
+    dest = root / Path(edit_path).stem
+    clips = archive.archive([timeline.source(ROOT, c["src"]) for c in edit["clips"]], dest / "inputs")
+    files = archive.archive([render_path, edit_path], dest)
+    print(f"{dest}  ({len(clips)} inputs + {len(files)} files, sha256-verified; in/ untouched)")
+
+
 if __name__ == "__main__":
-    commands = {"render": render, "peaks": peaks}
-    if len(sys.argv) != 3 or sys.argv[1] not in commands:
+    commands = {"render": (render, 1), "peaks": (peaks, 1), "archive": (archive_edit, 2)}
+    command, arity = commands.get(sys.argv[1] if len(sys.argv) > 1 else "", (None, 0))
+    if command is None or len(sys.argv) != 2 + arity:
         sys.exit(__doc__)
-    commands[sys.argv[1]](sys.argv[2])
+    command(*sys.argv[2:])
