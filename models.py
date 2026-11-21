@@ -120,7 +120,7 @@ def problems(edit):
         require(card.get("in", 0) < card.get("hit", -1) < card.get("out", -1), f"in < hit < out: {card}")
         require(card.get("hit", 0) - card.get("in", 0) <= 0.8, f"key word lands too late for short attention (hit - in <= 0.8): {card}")
         require(card.get("kick") in (None, "left", "right"), f'kick is "left" or "right": {card}')
-        require(card.get("hit", 0) < card.get("shrink", card.get("hit", 0) + 1) < card.get("out", 0),
+        require("shrink" not in card or card.get("hit", 0) < card["shrink"] < card.get("out", 0),
                 f"shrink must fall between hit and out: {card}")
         beats = card.get("beats", [])
         require(beats == sorted(beats) and all(card.get("hit", 0) < b <= card.get("out", 0) for b in beats),
