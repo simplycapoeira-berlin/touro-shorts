@@ -98,8 +98,10 @@ followed by its move:
   - `in`: the card starts appearing. `hit`: the key word has landed. `out`: the card starts
     leaving. Times are on the final timeline.
   - `kick` (optional, `left`/`right`): at `out`, a kick knocks the letters away in that direction.
-  - `shrink` (optional time): the card shrinks into its corner from here until `out`, bridging a
-    long gap to the next card.
+  - `shrink` (optional time): the card snaps small into its corner and stays until `out`,
+    bridging a long gap to the next card.
+  - `beats` (optional list of times): kicks or big moves. Each one pops the card and underlines
+    the key word again.
 - **`brightness`** (optional, −1..1): darkens or brightens the footage only, never the text.
 
 ## Cold archive (e.g. Google Drive)

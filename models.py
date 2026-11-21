@@ -29,10 +29,16 @@ MODELS = {
                    "numbered step card lands on the fingers",
 }
 STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
+PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's peak (STYLE.md §8)
 
 EDIT_KEYS = {"type", "clips", "output", "brightness", "cards"}
 CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text"}
-CARD_KEYS = {"text", "in", "hit", "out", "kick", "shrink"}
+CARD_KEYS = {"text", "in", "hit", "out", "kick", "shrink", "beats"}
+
+
+def has_hook(edit):
+    """Every type may open with a hook: a first clip slowed below normal speed."""
+    return len(edit["clips"]) > 1 and edit["clips"][0].get("speed", 1) < 1
 
 
 def play_clips(edit):
@@ -48,19 +54,23 @@ def play_clips(edit):
 
 def edit_cards(edit):
     """The edit's text cards: explicit "cards", or for educational edits one step card per step
-    (a step = its intro + its move)."""
+    (a step = its intro + its move; the hook has no card). The move's peak is the card's beat, so
+    the move itself underlines the step number."""
     if "cards" in edit:
         return edit["cards"]
     if edit["type"] != "educational":
         return []
     spans = iter(timeline.segments(play_clips(edit), ROOT))
+    if has_hook(edit):
+        next(spans)
     steps = []
-    for n, clip in enumerate(edit["clips"], 1):
+    for n, clip in enumerate(edit["clips"][has_hook(edit):], 1):
         start, end = next(spans)
+        move_start = start
         if "intro" in clip:
-            end = next(spans)[1]
+            move_start, end = next(spans)
         steps.append({"text": clip.get("text", f"Step {n}"), "in": start + STEP_IN, "hit": start + STEP_HIT,
-                      "out": end - STEP_GAP})
+                      "out": end - STEP_GAP, "beats": [move_start + PEAK_LEAD]})
     return steps
 
 
@@ -87,8 +97,8 @@ def problems(edit):
             intro = clip.get("intro", [0, 0.5])
             require(0.5 <= intro[1] - intro[0] <= 1.2, f"finger count (intro) should last 0.5..1.2 s: {clip}")
             require(intro[1] <= clip.get("start", 0), f"finger count (intro) comes before the move: {clip}")
-    if kind == "sequence" and len(edit.get("clips", [])) > 1:
-        require(edit["clips"][0].get("speed", 1) < 1, "a sequence opens with a slow-motion hook (first clip speed < 1)")
+    if len(edit.get("clips", [])) > 1:
+        require(edit["clips"][0].get("speed", 1) < 1, "a video opens with a slow-motion hook (first clip speed < 1)")
     if found:
         return found  # card checks below assume a well-formed edit
 
@@ -101,6 +111,9 @@ def problems(edit):
         require(card.get("kick") in (None, "left", "right"), f'kick is "left" or "right": {card}')
         require(card.get("hit", 0) < card.get("shrink", card.get("hit", 0) + 1) < card.get("out", 0),
                 f"shrink must fall between hit and out: {card}")
+        beats = card.get("beats", [])
+        require(beats == sorted(beats) and all(card.get("hit", 0) < b <= card.get("out", 0) for b in beats),
+                f"beats are move moments in order, between hit and out: {card}")
         if len(words) >= 2:
             require(cards.kicker_width(cards.compose(card, index)) <= cards.SAFE_W, f"kicker wider than the safe width: {card}")
     return found

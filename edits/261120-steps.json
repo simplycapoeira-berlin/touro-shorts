@@ -1,11 +1,12 @@
 {
   "type": "educational",
   "clips": [
-    {"src": "in/IMG_7013.MOV", "intro": [2.5, 3.4], "start": 7.3, "end": 10.4},
-    {"src": "in/IMG_7014.MOV", "intro": [1.1, 1.9], "start": 5.2, "end": 8.3},
-    {"src": "in/IMG_7015.MOV", "intro": [0.6, 1.5], "start": 3.9, "end": 7.0},
-    {"src": "in/IMG_7016.MOV", "intro": [0.4, 1.2], "start": 3.2, "end": 6.3},
-    {"src": "in/IMG_7017.MOV", "intro": [0.3, 1.1], "start": 3.5, "end": 6.6}
+    {"src": "in/IMG_7017.MOV", "start": 4.55, "end": 5.35, "speed": 0.5},
+    {"src": "in/IMG_7013.MOV", "intro": [2.5, 3.4], "start": 7.3, "end": 10.1},
+    {"src": "in/IMG_7014.MOV", "intro": [1.1, 1.9], "start": 5.2, "end": 8.0},
+    {"src": "in/IMG_7015.MOV", "intro": [0.6, 1.5], "start": 3.9, "end": 6.7},
+    {"src": "in/IMG_7016.MOV", "intro": [0.4, 1.2], "start": 3.2, "end": 6.0},
+    {"src": "in/IMG_7017.MOV", "intro": [0.3, 1.1], "start": 3.5, "end": 6.3}
   ],
   "output": "out/261120-steps.mp4",
   "brightness": -0.05

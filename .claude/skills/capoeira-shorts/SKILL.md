@@ -25,7 +25,9 @@ full rules (§8 for the types). This skill is the working procedure.
 - **The movement may remove the text.** When a kick sweeps through the band, use
   `"kick": "left"|"right"` with `out` = the frame the foot reaches the letters. A payoff kick
   is worth a quiet stretch with no text.
-- No looping motion. Every motion either brings information in or takes it out.
+- No looping motion. Every motion either brings information in or takes it out, or answers
+  a move (`beats`: the card pops and the kick underlines the key word again).
+- Every video opens with a slow-motion hook, educational ones included (no card on the hook).
 
 ## Procedure
 

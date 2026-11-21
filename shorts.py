@@ -21,8 +21,10 @@ to the movement:
   out  - the card starts leaving; past the clip end = hold to the end
   kick - optional, "left" or "right": at `out` a kick sweeping in that direction knocks the
          letters off screen instead of the normal slide-out
-  shrink - optional time: from here the card shrinks toward its aligned top corner, staying
+  shrink - optional time: the card snaps small into its aligned top corner, staying
          readable but out of the movement's way until `out` (bridges a long gap to the next card)
+  beats - optional list of times (kicks, big moves): each pops the card and underlines the
+         key word again
 Cards alternate left / right alignment. Design rules behind every constant: STYLE.md.
 
 Clip and output paths may use environment variables (e.g. "$SC_CONTENT/...") or be relative to
