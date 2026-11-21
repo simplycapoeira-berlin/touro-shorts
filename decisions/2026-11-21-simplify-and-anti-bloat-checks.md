@@ -44,3 +44,11 @@ and of complexity and dead-code gates for AI-written code.
 
 A limit may be lowered at any time; raising one needs a decision. Decision files are history and
 are not checked.
+
+**One place for the checks (follow-up request: put them in pre-commit hooks, required on `main`):**
+- `.pre-commit-config.yaml` holds every check: ruff (lint + complexity), ruff format, mypy
+  (types), vulture, pytest. Each hook runs through `uv run`, so the tool versions come from
+  `uv.lock`, the same on every machine.
+- `uv run pre-commit install` runs them on every commit. CI runs the same hooks
+  (`pre-commit run --all-files`) as the `checks` job, and branch protection requires `checks`.
+- AGENTS.md now points to the hook file instead of listing commands, so the list can't drift.

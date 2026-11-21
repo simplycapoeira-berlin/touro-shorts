@@ -29,18 +29,15 @@ The app is the package `src/touro_shorts/`, installed by `uv sync` with the comm
 ## Rules that always apply
 
 - **Work on a branch and open a pull request.** `main` is protected: direct pushes are rejected,
-  and a pull request merges only with green CI and up to date with `main`. CI runs
-  `uv run ruff check`, `uv run ruff format --check`, `uv run vulture` and `uv run pytest` on every
-  push; run them yourself before committing. A red check means stop and fix; never delete or
-  weaken a check to get green.
+  and a pull request merges only when it is up to date and its `checks` pass.
+- **The checks are the hooks in `.pre-commit-config.yaml`.** Run `uv run pre-commit install`
+  once; then they run on every commit, and CI runs the same hooks on every push. To run them by
+  hand: `uv run pre-commit run --all-files`. A red check means stop and fix; never skip a hook
+  (`--no-verify`) or weaken a check to get green.
 - **Keep it small: each fact lives in one place.** Link to it instead of copying it, because
-  copies drift apart. Tools enforce this, not instructions:
-  - ruff keeps the style and a complexity limit per function (`pyproject.toml`);
-  - vulture finds dead code;
-  - `tests/test_docs.py` checks that the docs name only files and commands that exist, that
-    example edits are valid, and that each doc stays within its line budget.
-  If a doc hits its budget, cut duplication first. Lower a limit when you can, never raise one
-  without a decision.
+  copies drift apart. The hooks enforce this (complexity limit, dead code, and
+  `tests/test_docs.py` for the docs). If a doc hits its line budget, cut duplication first.
+  Lower a limit when you can, never raise one without a decision.
 - **Every design or behaviour change** adds a file in `decisions/` (template in
   `decisions/README.md`) and updates the matching STYLE.md section, in the same pull request.
   Never rewrite someone else's decision. Add a new one that replaces it.

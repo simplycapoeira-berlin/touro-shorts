@@ -18,6 +18,8 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "mypy>=1.18",
+    "pre-commit>=4.3",
     "pytest>=9.2.0",
     "ruff>=0.14",
     "vulture>=2.14",
