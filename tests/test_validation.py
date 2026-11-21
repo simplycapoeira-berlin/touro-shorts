@@ -58,13 +58,13 @@ def test_educational_steps_need_explicit_cuts_and_a_short_finger_count():
 
 def test_educational_cards_are_generated_per_step():
     edit = {"type": "educational", "output": "out/s.mp4", "clips": [
-        {"src": "in/a.mov", "start": 4.0, "end": 4.5, "hook": True},
+        {"src": "in/a.mov", "start": 4.0, "end": 5.5, "hook": True},
         {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 6.0},
         {"src": "in/b.mov", "start": 2.0, "end": 5.0, "text": "Step 2 aú"}]}
     steps = models.edit_cards(edit)
     assert [s["text"] for s in steps] == ["In 2 steps", "Step 1", "Step 2 aú"]
-    assert steps[1]["in"] == pytest.approx(0.5 + models.STEP_IN)  # after the 0.5 s hook
-    assert steps[2]["in"] == pytest.approx(0.5 + 0.8 + 3.0 + models.STEP_IN)  # after step 1's intro + move
+    assert steps[1]["in"] == pytest.approx(1.5 + models.STEP_IN)  # after the 1.5 s hook
+    assert steps[2]["in"] == pytest.approx(1.5 + 0.8 + 3.0 + models.STEP_IN)  # after step 1's intro + move
     assert models.problems(edit) == []
 
 
