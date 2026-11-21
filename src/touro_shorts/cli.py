@@ -1,40 +1,12 @@
-"""Turn raw capoeira clips into a finished vertical short: cut, join, grade, then animate
-brand-styled, movement-timed text cards on top.
+"""touro-shorts: turn raw capoeira clips into a finished vertical short.
 
 Usage:
-    uv run touro-shorts peaks <clip>        # print motion peaks, to pick cuts and card timings
-    uv run touro-shorts render <edit.json>  # render the edit described in the JSON
-    uv run touro-shorts clean <edit.json> [version]   # keep one render version (default: latest),
-                                                   # delete the others; only when the user asks
-    uv run touro-shorts archive <edit.json> <folder>  # cold-archive its inputs, kept render and edit
-                                                   # into <folder>/<edit name>/ (e.g. Google Drive)
+    touro-shorts peaks <clip>                  # strongest motion moments, to time cuts and cards
+    touro-shorts render <edit.json>            # render a new version: out/<name>-v<n>.mp4
+    touro-shorts clean <edit.json> [version]   # keep one version (default: latest), delete the others
+    touro-shorts archive <edit.json> <folder>  # copy inputs, kept render and edit to <folder>/<edit name>/
 
-Every render is a new version (out/<name>-v1.mp4, -v2.mp4, ...; see versions.py); a render
-identical to the latest version is not stored twice.
-
-An edit file (models.py) declares its video "type" (see models.MODELS), its "clips" (timeline.py), an "output"
-path, an optional "brightness", and its text cards. Educational edits may omit "cards": each
-clip then gets a numbered step card automatically (its optional "text", or "Step <n>").
-The type and the sources are written into the output's metadata.
-
-Text cards (cards.py): the last word of each card is its key word: it is set huge
-and marked in yellow; the words before it form the small kicker line above. Each card is timed
-to the movement:
-    {"text": "It is not about talent", "in": s, "hit": s, "out": s, "kick": "left"}
-  in   - the kicker starts entering (once the body has cleared the text band)
-  hit  - the key word has landed and the yellow marker is complete
-  out  - the card starts leaving; past the clip end = hold to the end
-  kick - optional, "left" or "right": at `out` a kick sweeping in that direction knocks the
-         letters off screen instead of the normal slide-out
-  shrink - optional time: the card snaps small into its aligned top corner, staying
-         readable but out of the movement's way until `out` (bridges a long gap to the next card)
-  beats - optional list of times (kicks, big moves): each makes the card pop
-Cards alternate left / right alignment. Design rules behind every constant: STYLE.md.
-
-Clip and output paths may use environment variables (e.g. "$SC_CONTENT/...") or be relative to
-the repo (e.g. "in/IMG_7011.MOV"), so edit files never contain a machine-specific (or private)
-path. "brightness" (ffmpeg eq, -0.2..0.2, default 0) grades the footage only, so the type keeps its
-exact brand colors.
+The edit file format is in the README; the design rules behind it are in STYLE.md.
 """
 
 import json
@@ -183,14 +155,16 @@ def archive_edit(edit_path, folder):
     print(f"{dest}  ({len(clips)} inputs + {len(files)} files, sha256-verified; in/ untouched)")
 
 
+COMMANDS = {  # name: (function, fewest arguments, most arguments)
+    "render": (render, 1, 1),
+    "peaks": (peaks, 1, 1),
+    "clean": (clean, 1, 2),
+    "archive": (archive_edit, 2, 2),
+}
+
+
 def main():
-    commands = {
-        "render": (render, 1, 1),
-        "peaks": (peaks, 1, 1),
-        "clean": (clean, 1, 2),
-        "archive": (archive_edit, 2, 2),
-    }
-    command, least, most = commands.get(sys.argv[1] if len(sys.argv) > 1 else "", (None, 0, 0))
+    command, least, most = COMMANDS.get(sys.argv[1] if len(sys.argv) > 1 else "", (None, 0, 0))
     if command is None or not least <= len(sys.argv) - 2 <= most:
         sys.exit(__doc__)
     command(*sys.argv[2:])

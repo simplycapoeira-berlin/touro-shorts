@@ -30,9 +30,17 @@ The app is the package `src/touro_shorts/`, installed by `uv sync` with the comm
 
 - **Work on a branch and open a pull request.** `main` is protected: direct pushes are rejected,
   and a pull request merges only with green CI and up to date with `main`. CI runs
-  `uv run ruff check`, `uv run ruff format --check` and `uv run pytest` on every push; run them
-  yourself before committing. Style is enforced by ruff, not by instructions. A red test means stop and
-  fix; never delete or weaken a test to get green.
+  `uv run ruff check`, `uv run ruff format --check`, `uv run vulture` and `uv run pytest` on every
+  push; run them yourself before committing. A red check means stop and fix; never delete or
+  weaken a check to get green.
+- **Keep it small: each fact lives in one place.** Link to it instead of copying it, because
+  copies drift apart. Tools enforce this, not instructions:
+  - ruff keeps the style and a complexity limit per function (`pyproject.toml`);
+  - vulture finds dead code;
+  - `tests/test_docs.py` checks that the docs name only files and commands that exist, that
+    example edits are valid, and that each doc stays within its line budget.
+  If a doc hits its budget, cut duplication first. Lower a limit when you can, never raise one
+  without a decision.
 - **Every design or behaviour change** adds a file in `decisions/` (template in
   `decisions/README.md`) and updates the matching STYLE.md section, in the same pull request.
   Never rewrite someone else's decision. Add a new one that replaces it.

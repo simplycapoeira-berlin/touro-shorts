@@ -24,156 +24,89 @@
 
 ---
 
-An AI editing assistant for capoeira video editors: bring raw clips and a few words, talk to
-Claude, get brand-consistent [Simplesmente Capoeira](https://sc-capoeira.de/) Instagram shorts
-(12–20 s, 1080×1920) whose text moves with the capoeira.
-- What the product is and why: [PRODUCT.md](PRODUCT.md).
-- The visual rules: [STYLE.md](STYLE.md).
-- Every decision along the way: [decisions/](decisions/).
+An AI editing assistant for capoeira video editors. Bring raw clips and a few words, talk to
+Claude, and get brand-consistent [Simplesmente Capoeira](https://sc-capoeira.de/) shorts
+(12–20 s, 1080×1920). The same inputs always give the same video.
+
+- [PRODUCT.md](PRODUCT.md): what the product is and why.
+- [STYLE.md](STYLE.md): the visual rules and the two video types (`sequence`, `educational`).
+- [decisions/](decisions/): why each rule exists.
+- [AGENTS.md](AGENTS.md): how to change this repo (for people and AI agents).
 
 ## Setup
 
-Needs [uv](https://docs.astral.sh/uv/) and `ffmpeg` on PATH (`brew install uv ffmpeg`).
+Needs [uv](https://docs.astral.sh/uv/) and `ffmpeg` (`brew install uv ffmpeg`).
 
 ```bash
 uv sync
-mkdir -p in out   # raw clips go in in/, renders land in out/ (both stay local, never pushed)
+mkdir -p in out   # raw clips go in in/, renders in out/; both stay on your machine
 ```
-
-Clips can also live anywhere else: edit paths may be absolute on your machine or use
-environment variables like `$SC_CONTENT/...`.
-
-## Video types
-
-Every edit declares a `type`, the model of the output. It's stored in the output's metadata
-(`genre` and a JSON `comment`). The full recipes are in [STYLE.md §8](STYLE.md).
-
-| Type | Input | Output |
-|---|---|---|
-| `sequence` | one continuous movement clip and a sentence | a 0.5× slow-motion hook of the best move, then the sequence; two text cards that the kicks knock away |
-| `educational` | one clip per technique, opened by a finger count | per step: the finger count, then the move, with an automatic STEP 1, 2, 3… card landing on the fingers |
 
 ## Make a short
 
 ```bash
-uv run touro-shorts peaks in/<clip>.MOV            # when the strongest moves happen
-cp edits/261120-sequence.json edits/<yymmdd>-<name>.json   # copy an edit of the same type
-uv run touro-shorts render edits/<yymmdd>-<name>.json         # -> out/<name>.mp4
-uv run pytest                                   # checks every edit, rule and the pipeline
+uv run touro-shorts peaks in/<clip>.MOV                 # when the strongest moves happen
+cp edits/261120-sequence.json edits/<yymmdd>-<name>.json  # start from an edit of the same type
+uv run touro-shorts render edits/<yymmdd>-<name>.json   # -> out/<name>-v<n>.mp4
 ```
 
-A sequence edit:
+Every render is a new version (`-v1`, `-v2`, …). Nothing is overwritten, and a render identical
+to the latest version isn't stored twice.
+
+## The edit file
+
+An edit describes one video as data. It is checked before anything renders, and every broken
+rule is listed at once:
 
 ```json
 {
   "type": "sequence",
   "clips": [
-    {"src": "in/IMG_7011.MOV", "start": 11.6, "end": 12.7, "speed": 0.5},
+    {"src": "in/IMG_7011.MOV", "start": 11.6, "end": 12.7, "speed": 0.5, "hook": true},
     {"src": "in/IMG_7011.MOV", "start": 1.0, "end": 16.6}
   ],
   "output": "out/261120-sequence.mp4",
   "brightness": -0.05,
   "cards": [
-    {"text": "It is not about talent", "in": 0.9, "hit": 1.55, "shrink": 5.0, "out": 12.95, "kick": "left"},
-    {"text": "It is about practice", "in": 13.9, "hit": 14.55, "out": 16.1, "kick": "left"}
+    {"text": "It is not about talent", "in": 0.9, "hit": 1.55, "shrink": 3.0, "beats": [9.0], "out": 9.6, "kick": "left"},
+    {"text": "It is about practice", "in": 10.2, "hit": 10.85, "out": 16.1, "kick": "left"}
   ]
 }
 ```
 
-An educational edit needs no cards. Each clip becomes one step: its finger count (`intro`)
-followed by its move:
+- **`type`:** `sequence` or `educational` (recipes in [STYLE.md §8](STYLE.md)). It is written
+  into the output's metadata.
+- **`clips`:** played in order with hard cuts.
+  - `start`/`end` are seconds in the source; `speed` is 0.5–2 (0.5 = slow motion).
+  - A multi-clip video opens with a hook: the first clip, marked `"hook": true`.
+  - `intro` [start, end] plays a second cut of the same source first (an educational step's
+    finger count). `text` names a step.
+  - Paths are repo-relative (`in/...`) or use variables (`$SC_CONTENT/...`), never personal paths.
+- **`cards`:** the last word is the key word, set huge with the yellow marker. Times are on the
+  final timeline.
+  - `in`: the card starts appearing. `hit`: the key word has landed. `out`: it starts leaving.
+  - `kick` (`left`/`right`): at `out`, a kick knocks the letters away.
+  - `shrink`: the card snaps small into its corner and stays until `out`.
+  - `beats`: kicks or big moves; each one makes the card pop.
+  - Educational edits leave out `cards`: the step cards are generated.
+- **`brightness`** (−0.2..0.2): grades the footage only, never the text.
 
-```json
-{
-  "type": "educational",
-  "clips": [
-    {"src": "in/IMG_7013.MOV", "intro": [2.5, 3.4], "start": 7.3, "end": 10.4},
-    {"src": "in/IMG_7014.MOV", "intro": [1.1, 1.9], "start": 5.2, "end": 8.3, "text": "Step 2 aú"}
-  ],
-  "output": "out/261120-steps.mp4"
-}
-```
+## Finish
 
-- **Clips:** the first clip of a multi-clip edit is the hook (`"hook": true`): slow motion in
-  a sequence, real speed in an educational video. `start`/`end` cut a clip (seconds in the source). `speed` 0.5–2 re-times it (0.5 =
-  slow motion). `intro` [start, end] plays a second cut of the same source first (the finger
-  count). Clips are joined in order with hard cuts.
-- **Cards:** the last word of each card is its key word, set huge with the yellow marker.
-  - `in`: the card starts appearing. `hit`: the key word has landed. `out`: the card starts
-    leaving. Times are on the final timeline.
-  - `kick` (optional, `left`/`right`): at `out`, a kick knocks the letters away in that direction.
-  - `shrink` (optional time): the card snaps small into its corner and stays until `out`,
-    bridging a long gap to the next card.
-  - `beats` (optional list of times): kicks or big moves. Each one makes the card pop.
-- **`brightness`** (optional, −1..1): darkens or brightens the footage only, never the text.
-
-## Versions
-
-Every render is a new version: `out/<name>-v1.mp4`, `-v2.mp4`, … Nothing is overwritten, so
-you can compare iterations. A render identical to the latest version isn't stored twice. When
-you're done:
+Only when you are done, and only on request:
 
 ```bash
-uv run touro-shorts clean edits/261120-steps.json      # keep the latest version, delete the others
-uv run touro-shorts clean edits/261120-steps.json 2    # or keep version 2
+uv run touro-shorts clean edits/<file>.json [n]              # keep version n (default: latest), delete the others
+uv run touro-shorts archive edits/<file>.json "<Drive folder>"  # copy inputs, render and edit to cold storage
 ```
 
-## Cold archive (e.g. Google Drive)
+`archive` writes `<folder>/<edit name>/` and checks every copy with sha256 (`manifest.json`). It
+never overwrites or deletes anything, and the folder must already exist, so a mistyped path
+fails. Clearing `in/` afterwards is up to you.
 
-Once an edit is finished, store its raw inputs, the render and the edit file away from the laptop:
+## License
 
-```bash
-uv run touro-shorts archive edits/261120-steps.json "<your Google Drive folder>"
-```
-
-This creates `<folder>/261120-steps/` with `inputs/` (the original clips, unchanged), the render
-and the edit file. Point it at a folder inside Google Drive for desktop and Drive uploads it.
-
-- Every copy is checked with sha256 and listed in a `manifest.json`.
-- Re-running it is safe: identical files are skipped, and a different file with the same name
-  stops the run instead of being overwritten.
-- The folder must already exist, so a mistyped path fails instead of silently writing locally.
-- Nothing in `in/` is deleted. Once the archive has synced, clearing `in/` is up to you.
-
-## Working together (through Claude)
-
-Several people change this repo through Claude, each on their own part. Changes meet on GitHub:
-
-1. **Branch and pull request.** Start a branch, let Claude make the change, open a pull request.
-   Nobody pushes to `main` directly.
-2. **Tests guard everyone's work.** GitHub Actions runs `uv run pytest` on every push. The tests
-   need no footage:
-   - every committed edit is validated;
-   - every rule in `models.py` has a test that breaks it on purpose;
-   - text drawing follows the motion grammar;
-   - the archive never overwrites or deletes;
-   - a synthetic clip is rendered end to end (format, metadata, GPS stripped, byte-identical
-     re-renders).
-3. **Edits are validated before rendering.** `models.load` lists every broken rule at once, so a
-   typo like `"kik"` fails with a clear message instead of a wrong video.
-4. **Decisions accumulate.** Each design change adds one file in [decisions/](decisions/)
-   (feedback → decision, who asked). [STYLE.md](STYLE.md) always shows the current rules.
-
-The app is a Python package in `src/touro_shorts/` with one command, `touro-shorts`:
-
-| Area | File |
-|---|---|
-| Text look and motion | `src/touro_shorts/cards.py` |
-| Video types, edit fields, rules | `src/touro_shorts/models.py` |
-| Cutting, slow motion, joining | `src/touro_shorts/timeline.py` |
-| Render versions | `src/touro_shorts/versions.py` |
-| Cold storage | `src/touro_shorts/archive.py` |
-| Commands | `src/touro_shorts/cli.py` |
-| Reference frames of the look | `tests/goldens/` |
-
-Every AI agent reads [AGENTS.md](AGENTS.md) (Claude via [CLAUDE.md](CLAUDE.md)), plus the project skills in `.claude/skills/`:
-`capoeira-shorts` (making an edit) and `coding-principles` (changing the code, and where each
-kind of change goes).
-
-## Fonts
-
-`fonts/` holds Archivo (from sc-capoeira.de), licensed under the SIL Open Font License 1.1.
-See [fonts/OFL.txt](fonts/OFL.txt).
-
-The TOURO logo (`docs/touro-logo.jpg`) belongs to [TOURO](https://www.youtube.com/@Tourocapoeira)
-and isn't covered by the code in this repository.
+The fonts in [src/touro_shorts/fonts/](src/touro_shorts/fonts/) are Archivo, under the
+[SIL Open Font License 1.1](src/touro_shorts/fonts/OFL.txt). The TOURO logo
+(`docs/touro-logo.jpg`) belongs to [TOURO](https://www.youtube.com/@Tourocapoeira) and isn't
+covered by the code's license.

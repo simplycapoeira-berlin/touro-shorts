@@ -6,7 +6,8 @@ description: How code in this repo is written and changed. Karpathy's LLM-coding
 # Coding principles
 
 Two sources, applied here: Karpathy's guidelines against common LLM coding mistakes, and John
-Ousterhout's *A Philosophy of Software Design* (the central job is managing complexity).
+Ousterhout's *A Philosophy of Software Design* (the central job is managing complexity). Where
+each kind of change goes, and the rules CI enforces, are in AGENTS.md.
 
 ## Before coding (Karpathy: think first)
 
@@ -25,41 +26,21 @@ Ousterhout's *A Philosophy of Software Design* (the central job is managing comp
 
 ## Design (Ousterhout)
 
-- **Deep module, simple interface.** The whole interface is `touro-shorts render | peaks | clean | archive`. An edit says only *what* and *when* (`text`, `in`, `hit`, `out`, `kick`). All
-  layout, easing and compositing stay hidden inside.
+- **Deep module, simple interface.** The whole interface is `touro-shorts render | peaks | clean | archive`.
+  An edit says only *what* and *when* (`text`, `in`, `hit`, `out`, `kick`). All layout, easing
+  and compositing stay hidden inside.
 - **Pull complexity down.** Hard decisions (alignment alternation, key-word sizing, kick physics)
   are made in code, not pushed to the edit author as options.
 - **Define errors out of existence.** For example, an `out` past the clip end simply holds the
   card, and the kicker and key word come from `text` itself, so they can't disagree.
-- **No information leakage.** Brand and motion values exist once, as named constants at the top
-  of `cards.py` (frame size in `timeline.py`, edit rules in `models.py`). STYLE.md explains *why* and never duplicates the numbers.
-- **Design it twice.** For a new effect, consider two approaches and say why you chose one. For
-  example, words rising vertically was chosen over sliding horizontally because staggered slides
-  collide.
+- **No information leakage.** Each fact lives in one place. Values are named constants at the top
+  of their module; docs explain *why* and link instead of copying.
+- **Design it twice.** For a new effect, consider two approaches and say why you chose one.
 - **Comments say why**, not what. One line. Names are precise (`kicker`, `key`, `hit`, `kick`).
 
 ## Verify (Karpathy: goal-driven execution)
 
-- Run `uv run pytest` and render, then look at extracted frames. A change isn't done until
+- Run the checks in AGENTS.md, render, then look at extracted frames. A change isn't done until
   you have seen it.
+- Measure before optimizing (`cProfile`). Most render time is ffmpeg decoding 4K footage.
 - Report honestly what was checked and what was not.
-
-## Collaborating (many people, one repo)
-
-Others change this repo in parallel through Claude. Assume your change meets theirs on `main`.
-
-- **Stay in your area.** Each module owns one area (see the table in CLAUDE.md). A change that
-  touches several areas is usually two pull requests.
-- **Extend, don't fork.** Where to put common changes:
-  - new edit field → `models.py` (`*_KEYS` + `problems`) + the code that uses it + a test in
-    `tests/test_validation.py`;
-  - new video type → `MODELS` + STYLE.md §8 + a decision + an example edit;
-  - new look or motion → a constant or function in `cards.py` + STYLE.md + a decision.
-- **Guard what you add.** If breaking it silently is possible, add a test. Never relax an
-  existing test or rule to make your change pass. If a rule is wrong, change it explicitly with
-  a decision file.
-- **Let tools hold the style.** `uv run ruff format` and `uv run ruff check` before committing;
-  CI rejects unformatted code. The look is held by reference frames (`tests/goldens/`).
-- **Measure before optimizing.** Profile first (`cProfile`); most render time is ffmpeg decoding
-  4K footage. Python is not the bottleneck, so a rewrite (e.g. Rust) is not justified by data.
-- **Small, reviewable pull requests.** CI must be green. Fill in the pull request checklist.
