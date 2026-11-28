@@ -27,10 +27,11 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
    times the text to the kicks, checks the frames, and renders `out/<edit>-v1.mp4`.
 4. **Give feedback, get the next version.** Each round adds a new version (`-v2`, `-v3`, …); nothing
    is overwritten. Each round's design choice is written down as a decision.
-5. **Finish.** When the user is happy, they tell Claude which version to keep. Claude deletes the
-   other versions and, if asked, archives inputs + kept version + edit to cold storage (e.g.
-   Google Drive). Raw clips are deleted only on the user's explicit instruction, after the
-   archive succeeded.
+5. **Finish.** The user names the version to keep; Claude deletes the others and, if asked,
+   archives inputs + kept version + edit (e.g. to Google Drive). Raw clips are deleted only on
+   the user's explicit instruction, after the archive succeeded.
+6. **Schedule (designed, not built).** "Post it Tuesday at 6 pm on Instagram and TikTok": Claude
+   confirms version, time, platforms and caption, then a posting service publishes it.
 
 ## Core concepts
 
@@ -59,8 +60,8 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
    - Renders are versions, never overwritten.
    - Deleting versions or raw clips and archiving only happen when a user asks.
    - Archives are checksum-verified.
-6. **Private by default.** Footage and renders never go to GitHub. GPS and device metadata are
-   stripped. Personal paths never appear in committed files.
+6. **Private by default.** Footage and renders never go to GitHub. A render leaves the laptop only
+   when a user schedules it to post. GPS, device data and personal paths are never shared.
 7. **Built to be extended by many people.** Modules are split by area, edits are validated, and
    tests run in CI. `main` changes only through pull requests with green tests.
 
@@ -80,10 +81,10 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
 | Fully automatic cut and kick detection (no frame check by Claude) | next: peaks fire on turns too, so frames are still checked |
 | More video types (e.g. roda highlights, music-synced) | later: each one is a new type with a recipe |
 | Named steps (e.g. "aú") instead of numbers | ready: a clip's `text`, when users give names |
+| Scheduled posting to Instagram, TikTok and more (`schedule`, via a posting service) | designed, not built: see decisions |
 
 ## Not in scope (for now)
 
 - Music, voice-over or subtitles of speech.
-- Posting to Instagram on the user's behalf.
 - Brands other than Simplesmente Capoeira. The style is one brand. A second brand would be a
   product decision, not an edit option.
