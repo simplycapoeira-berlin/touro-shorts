@@ -5,7 +5,8 @@
     {"src": "in/IMG_7069.MOV", "intro": [0.2, 1.1], "start": 1.4, "end": 4.1},
     {"src": "in/IMG_7070.MOV", "intro": [2.2, 3.1], "start": 4.0, "end": 6.7},
     {"src": "in/IMG_7071.MOV", "intro": [2.8, 3.7], "start": 3.9, "end": 6.6},
-    {"src": "in/IMG_7071.MOV", "intro": [29.4, 30.3], "start": 31.4, "end": 35.4}
+    {"src": "in/IMG_7071.MOV", "intro": [13.6, 14.4], "start": 18.8, "end": 21.5},
+    {"src": "in/IMG_7071.MOV", "intro": [29.4, 30.3], "start": 32.7, "end": 35.4}
   ],
   "output": "out/261128-ginga.mp4",
   "brightness": -0.05
