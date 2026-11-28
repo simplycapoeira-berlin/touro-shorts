@@ -30,8 +30,8 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
 5. **Finish.** The user names the version to keep; Claude deletes the others and, if asked,
    archives inputs + kept version + edit (e.g. to Google Drive). Raw clips are deleted only on
    the user's explicit instruction, after the archive succeeded.
-6. **Schedule (designed, not built).** "Post it Tuesday at 6 pm on Instagram and TikTok": Claude
-   confirms version, time, platforms and caption, then a posting service publishes it.
+6. **Schedule.** "Post it Tuesday at 6 pm on Instagram and TikTok": Claude confirms version,
+   time, channels and caption, then our own Postiz publishes it.
 
 ## Core concepts
 
@@ -81,7 +81,7 @@ visual rules, [decisions/](decisions/) the history of every choice, and the code
 | Fully automatic cut and kick detection (no frame check by Claude) | next: peaks fire on turns too, so frames are still checked |
 | More video types (e.g. roda highlights, music-synced) | later: each one is a new type with a recipe |
 | Named steps (e.g. "aú") instead of numbers | ready: a clip's `text`, when users give names |
-| Scheduled posting to Instagram, TikTok and more (`schedule`, via a posting service) | designed, not built: see decisions |
+| Scheduled posting to Instagram, TikTok and more (`schedule`, through Postiz in `deploy/postiz/`) | built, runs locally; Instagram needs R2 storage, TikTok a server |
 
 ## Not in scope (for now)
 

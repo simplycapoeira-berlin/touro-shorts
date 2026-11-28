@@ -3,3 +3,4 @@ in/
 out/
 .DS_Store
 __pycache__/
+deploy/postiz/.env

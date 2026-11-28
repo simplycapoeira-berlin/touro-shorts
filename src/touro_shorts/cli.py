@@ -5,6 +5,9 @@ Usage:
     touro-shorts render <edit.json>            # render a new version: out/<name>-v<n>.mp4
     touro-shorts clean <edit.json> [version]   # keep one version (default: latest), delete the others
     touro-shorts archive <edit.json> <folder>  # copy inputs, kept render and edit to <folder>/<edit name>/
+    touro-shorts schedule <edit.json> <time> <channels> [--yes]
+        # book the latest render through Postiz, e.g. 2026-12-02T18:00+01:00 instagram,tiktok;
+        # without --yes it only shows the plan: a post is public, so the user confirms first
 
 The edit file format is in the README; the design rules behind it are in STYLE.md.
 """
@@ -17,7 +20,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from . import archive, cards, models, timeline, versions
+from . import archive, cards, models, publish, timeline, versions
 
 W, H = cards.W, cards.H
 
@@ -155,11 +158,31 @@ def archive_edit(edit_path, folder):
     print(f"{dest}  ({len(clips)} inputs + {len(files)} files, sha256-verified; in/ untouched)")
 
 
+def schedule(edit_path, at, channels, confirm=None):
+    """Book the edit's latest render on social channels through Postiz (see publish.py)."""
+    edit = models.load(edit_path)
+    video = versions.latest(timeline.source(edit["output"]))
+    names = channels.split(",")
+    unknown = sorted(set(names) - set(publish.SETTINGS))
+    if video is None or "post" not in edit or unknown:
+        sys.exit(f'needs a render, a "post" caption in the edit and known channels {sorted(publish.SETTINGS)}')
+    try:
+        when = publish.when(at)
+        print(f"{video.name} -> {', '.join(names)} at {when} (UTC)\n{edit['post']['caption']}")
+        if confirm != "--yes":
+            print("not booked: run again with --yes once the user has confirmed")
+            return
+        print(publish.book(video, when, edit["post"]["caption"], names))
+    except (ValueError, OSError) as error:  # OSError: Postiz not running or refused the request
+        sys.exit(f"not booked: {error}")
+
+
 COMMANDS = {  # name: (function, fewest arguments, most arguments)
     "render": (render, 1, 1),
     "peaks": (peaks, 1, 1),
     "clean": (clean, 1, 2),
     "archive": (archive_edit, 2, 2),
+    "schedule": (schedule, 3, 4),
 }
 
 
