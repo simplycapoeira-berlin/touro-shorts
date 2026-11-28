@@ -107,6 +107,7 @@ def test_educational_hook_gets_a_first_frame_card_and_steps_get_their_peak_as_be
     }
     hook_card, step = models.edit_cards(edit)
     assert hook_card["text"] == "In 1 steps" and hook_card["in"] == 0.0, "text from the first frame"
+    assert hook_card["shrink"] == models.HOOK_SHRINK, "then snaps small, out of the hook move's way"
     assert step["text"] == "Step 1" and step["in"] == pytest.approx(2.0 + models.STEP_IN)
     assert step["beats"] == [pytest.approx(2.0 + 0.8 + models.PEAK_LEAD)]  # hook + intro + lead to the peak
     assert models.problems(edit) == []

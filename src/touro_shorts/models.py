@@ -23,6 +23,7 @@ MODELS = {
 STEP_IN, STEP_HIT, STEP_GAP = 0.1, 0.6, 0.35  # step card timing inside its step; hit lands on the finger count
 PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's peak (STYLE.md §8)
 HOOK_HIT, HOOK_GAP = 0.5, 0.3  # educational hook card: lands by 0.5 s, gone as the hook ends
+HOOK_SHRINK = 1.3  # then snaps small into its corner, so the hook move (and the face) stay clear
 
 EDIT_KEYS = {"type", "clips", "output", "brightness", "cards"}
 CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text", "hook"}
@@ -57,14 +58,11 @@ def edit_cards(edit):
     steps = []
     if has_hook(edit):  # text from the very first frame: muted scrollers decide in ~1-3 s
         hook, (_, hook_end) = edit["clips"][0], next(spans)
-        steps.append(
-            {
-                "text": hook.get("text", f"In {len(edit['clips']) - 1} steps"),
-                "in": 0.0,
-                "hit": HOOK_HIT,
-                "out": hook_end - HOOK_GAP,
-            }
-        )
+        card = {"text": hook.get("text", f"In {len(edit['clips']) - 1} steps"), "in": 0.0, "hit": HOOK_HIT}
+        card["out"] = hook_end - HOOK_GAP
+        if card["out"] > HOOK_SHRINK:  # a very short hook has no time to sit small
+            card["shrink"] = HOOK_SHRINK
+        steps.append(card)
     for n, clip in enumerate(edit["clips"][has_hook(edit) :], 1):
         start, end = next(spans)
         move_start = start
