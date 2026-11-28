@@ -92,18 +92,19 @@ rule is listed at once:
   - Educational edits leave out `cards`: the step cards are generated.
 - **`brightness`** (−0.2..0.2): grades the footage only, never the text.
 
-## Finish
+## Share and finish
 
-Only when you are done, and only on request:
+`schedule` books the latest render through [Postiz](deploy/postiz/compose.yaml), with the edit's
+`"post": {"caption": "..."}`; without `--yes` it only shows the plan. Clean and archive on request:
 
 ```bash
+uv run touro-shorts schedule edits/<file>.json 2026-12-02T18:00+01:00 instagram,youtube [--yes]
 uv run touro-shorts clean edits/<file>.json [n]              # keep version n (default: latest), delete the others
 uv run touro-shorts archive edits/<file>.json "<Drive folder>"  # copy inputs, render and edit to cold storage
 ```
 
-`archive` writes `<folder>/<edit name>/` and checks every copy with sha256 (`manifest.json`). It
-never overwrites or deletes anything, and the folder must already exist, so a mistyped path
-fails. Clearing `in/` afterwards is up to you.
+`archive` writes `<folder>/<edit name>/` with sha256-checked copies (`manifest.json`). It never
+overwrites or deletes, and a mistyped folder fails. Clearing `in/` afterwards is up to you.
 
 ## License
 

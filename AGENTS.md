@@ -21,6 +21,7 @@ The app is the package `src/touro_shorts/`, installed by `uv sync` with the comm
 | Cutting, joining, grading | `src/touro_shorts/timeline.py` | how clips become one timeline |
 | Render versions | `src/touro_shorts/versions.py` | how renders are numbered, kept or cleaned |
 | Cold storage | `src/touro_shorts/archive.py` | how finished edits are stored |
+| Sharing | `src/touro_shorts/publish.py`, `deploy/postiz/` | a new social platform, or how posts are booked |
 | Commands | `src/touro_shorts/cli.py` | a new command; it only wires the modules together |
 | Brand fonts | `src/touro_shorts/fonts/` | never, unless the brand changes (a decision) |
 | Edits | `edits/*.json` | a new video (validated by `models.load`) |

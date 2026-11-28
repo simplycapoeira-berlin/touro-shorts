@@ -25,7 +25,7 @@ PEAK_LEAD = 1.4  # an educational move cut starts this long before the move's pe
 HOOK_HIT, HOOK_GAP = 0.5, 0.3  # educational hook card: lands by 0.5 s, gone as the hook ends
 HOOK_SHRINK = 1.3  # then snaps small into its corner, so the hook move (and the face) stay clear
 
-EDIT_KEYS = {"type", "clips", "output", "brightness", "cards"}
+EDIT_KEYS = {"type", "clips", "output", "brightness", "cards", "post"}
 CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text", "hook", "kick", "kick_at"}
 CARD_KEYS = {"text", "in", "hit", "out", "kick", "shrink", "beats"}
 
@@ -96,6 +96,10 @@ def problems(edit):
         not set(edit) - EDIT_KEYS, f"unknown edit keys {sorted(set(edit) - EDIT_KEYS)} (allowed: {sorted(EDIT_KEYS)})"
     )
     require("clips" in edit and "output" in edit, 'an edit needs "clips" and "output"')
+    caption = edit.get("post", {"caption": "-"})
+    caption = caption if isinstance(caption, dict) else {}
+    require(set(caption) == {"caption"}, f'"post" holds only a "caption": {caption}')
+    require(1 <= len(str(caption.get("caption", ""))) <= 2200, "a caption has 1..2200 characters (Instagram's limit)")
     require(-0.2 <= edit.get("brightness", 0) <= 0.2, "brightness is a subtle grade: keep it within -0.2..0.2")
     for clip in edit.get("clips", []):
         require(not set(clip) - CLIP_KEYS, f"unknown clip keys {sorted(set(clip) - CLIP_KEYS)} in {clip}")
