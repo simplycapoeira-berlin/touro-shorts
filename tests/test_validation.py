@@ -107,6 +107,7 @@ def test_educational_hook_gets_a_first_frame_card_and_steps_get_their_peak_as_be
     }
     hook_card, step = models.edit_cards(edit)
     assert hook_card["text"] == "In 1 steps" and hook_card["in"] == 0.0, "text from the first frame"
+    assert hook_card["shrink"] == models.HOOK_SHRINK, "then snaps small, out of the hook move's way"
     assert step["text"] == "Step 1" and step["in"] == pytest.approx(2.0 + models.STEP_IN)
     assert step["beats"] == [pytest.approx(2.0 + 0.8 + models.PEAK_LEAD)]  # hook + intro + lead to the peak
     assert models.problems(edit) == []
@@ -122,3 +123,22 @@ def test_educational_hook_keeps_real_speed():
         ],
     }
     assert any("real speed" in m for m in models.problems(edit))
+
+
+def test_educational_hook_move_can_kick_its_card_away():
+    hook = {"src": "in/a.mov", "start": 4.0, "end": 6.0, "hook": True, "kick": "right", "kick_at": 1.0}
+    edit = {
+        "type": "educational",
+        "output": "out/s.mp4",
+        "clips": [hook, {"src": "in/a.mov", "intro": [1.0, 1.8], "start": 3.0, "end": 5.8}],
+    }
+    hook_card = models.edit_cards(edit)[0]
+    assert (hook_card["kick"], hook_card["out"]) == ("right", 1.0), "knocked away at the impact"
+    assert "shrink" not in hook_card, "kicked before it would snap small"
+    assert models.problems(edit) == []
+    assert "kick" not in models.play_clips(edit)[0], "the timeline never sees card fields"
+
+    del hook["kick_at"]
+    assert any("kick_at" in m for m in models.problems(edit))
+    hook.update(kick_at=0.3)  # before the key word has landed
+    assert any("in < hit < out" in m for m in models.problems(edit))

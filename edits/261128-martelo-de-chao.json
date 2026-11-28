@@ -1,0 +1,13 @@
+{
+  "type": "educational",
+  "clips": [
+    {"src": "in/IMG_7060.MOV", "start": 2.6, "end": 4.7, "hook": true, "text": "Martelo de chão", "kick": "right", "kick_at": 1.0},
+    {"src": "in/IMG_7061.MOV", "intro": [1.0, 1.9], "start": 3.0, "end": 5.7},
+    {"src": "in/IMG_7062.MOV", "intro": [2.6, 3.4], "start": 4.0, "end": 6.7},
+    {"src": "in/IMG_7063.MOV", "intro": [1.0, 1.9], "start": 6.37, "end": 9.07},
+    {"src": "in/IMG_7064.MOV", "intro": [0.5, 1.3], "start": 4.93, "end": 7.63},
+    {"src": "in/IMG_7065.MOV", "intro": [0.4, 1.3], "start": 2.8, "end": 5.5}
+  ],
+  "output": "out/261128-martelo-de-chao.mp4",
+  "brightness": -0.05
+}
