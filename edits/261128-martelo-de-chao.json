@@ -1,7 +1,7 @@
 {
   "type": "educational",
   "clips": [
-    {"src": "in/IMG_7060.MOV", "start": 2.6, "end": 4.7, "hook": true, "text": "Martelo de chão"},
+    {"src": "in/IMG_7060.MOV", "start": 2.6, "end": 4.7, "hook": true, "text": "Martelo de chão", "kick": "right", "kick_at": 1.0},
     {"src": "in/IMG_7061.MOV", "intro": [1.0, 1.9], "start": 3.0, "end": 5.7},
     {"src": "in/IMG_7062.MOV", "intro": [2.6, 3.4], "start": 4.0, "end": 6.7},
     {"src": "in/IMG_7063.MOV", "intro": [1.0, 1.9], "start": 6.37, "end": 9.07},

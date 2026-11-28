@@ -24,3 +24,8 @@ one), so a friend recorded mock (wrong) gingas: make try-out versions with them.
 - **Step 4 of the Ginga** comes from the second half of IMG_7071 (a hand count read as four
   fingers at ~29 s, then the full, wide ginga), cut 4 s long instead of 2.7 s, because a ginga
   needs more than one cycle to read.
+- **The Martelo de chão hook kicks its name away** (follow-up feedback: keep v1's full-size
+  card, and let the kick get rid of the text, as in the sequence videos). The hook clip may now
+  set `kick` and `kick_at` (educational edits only): the card stays big and is knocked off at
+  the impact instead of snapping small. Martelo: the foot reaches "chão" at 1.0 s, sweeping
+  right (v3).

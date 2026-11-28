@@ -26,7 +26,7 @@ HOOK_HIT, HOOK_GAP = 0.5, 0.3  # educational hook card: lands by 0.5 s, gone as 
 HOOK_SHRINK = 1.3  # then snaps small into its corner, so the hook move (and the face) stay clear
 
 EDIT_KEYS = {"type", "clips", "output", "brightness", "cards"}
-CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text", "hook"}
+CLIP_KEYS = {"src", "start", "end", "speed", "intro", "text", "hook", "kick", "kick_at"}
 CARD_KEYS = {"text", "in", "hit", "out", "kick", "shrink", "beats"}
 
 
@@ -42,7 +42,7 @@ def play_clips(edit):
     for clip in edit["clips"]:
         if "intro" in clip:
             clips.append({"src": clip["src"], "start": clip["intro"][0], "end": clip["intro"][1]})
-        clips.append({k: v for k, v in clip.items() if k not in ("intro", "text", "hook")})
+        clips.append({k: v for k, v in clip.items() if k not in ("intro", "text", "hook", "kick", "kick_at")})
     return clips
 
 
@@ -60,6 +60,8 @@ def edit_cards(edit):
         hook, (_, hook_end) = edit["clips"][0], next(spans)
         card = {"text": hook.get("text", f"In {len(edit['clips']) - 1} steps"), "in": 0.0, "hit": HOOK_HIT}
         card["out"] = hook_end - HOOK_GAP
+        if "kick" in hook:  # the hook move knocks its card away at the impact (timeline seconds)
+            card.update(kick=hook["kick"], out=hook["kick_at"])
         if card["out"] > HOOK_SHRINK:  # a very short hook has no time to sit small
             card["shrink"] = HOOK_SHRINK
         steps.append(card)
@@ -109,6 +111,9 @@ def problems(edit):
     if len(clips) > 1:
         require(clips[0].get("hook", False), 'a video with several clips opens with a hook (first clip "hook": true)')
     require(not any(c.get("hook") for c in clips[1:]), "only the first clip can be the hook")
+    require(not any("kick" in c or "kick_at" in c for c in clips[1:]), "only the hook clip can kick its card")
+    require(all(("kick" in c) == ("kick_at" in c) for c in clips), 'a hook kick needs "kick" and "kick_at"')
+    require(kind == "educational" or not any("kick" in c for c in clips), "hook kicks are for generated hook cards")
     if clips and clips[0].get("hook"):
         if kind == "sequence":
             require(clips[0].get("speed", 1) < 1, "a sequence hook plays in slow motion (speed < 1)")

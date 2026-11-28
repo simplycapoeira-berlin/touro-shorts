@@ -80,7 +80,8 @@ rule is listed at once:
   - `start`/`end` are seconds in the source; `speed` is 0.5–2 (0.5 = slow motion).
   - A multi-clip video opens with a hook: the first clip, marked `"hook": true`.
   - `intro` [start, end] plays a second cut of the same source first (an educational step's
-    finger count). `text` names a step.
+    finger count). `text` names a step, or on a hook its card. In an educational hook,
+    `kick` (`left`/`right`) and `kick_at` (timeline seconds) let the move knock that card away.
   - Paths are repo-relative (`in/...`) or use variables (`$SC_CONTENT/...`), never personal paths.
 - **`cards`:** the last word is the key word, set huge with the yellow marker. Times are on the
   final timeline.
