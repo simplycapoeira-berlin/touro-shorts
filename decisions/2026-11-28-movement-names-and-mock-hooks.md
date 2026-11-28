@@ -29,3 +29,7 @@ one), so a friend recorded mock (wrong) gingas: make try-out versions with them.
   set `kick` and `kick_at` (educational edits only): the card stays big and is knocked off at
   the impact instead of snapping small. Martelo: the foot reaches "chão" at 1.0 s, sweeping
   right (v3).
+- **Correction (same day, owner):** the count at ~29 s of IMG_7071 shows five fingers: it is
+  step 5, not 4. The real step 4 (four fingers at ~14 s, then a wide side ginga, peak ~20.2 s)
+  was added. To stay ≤ 20 s with five steps, every move uses the standard 2.7 s cut (step 5
+  too) and every hook is 2.1 s (the mock hooks keep the end of the wrong ginga and the wag).
